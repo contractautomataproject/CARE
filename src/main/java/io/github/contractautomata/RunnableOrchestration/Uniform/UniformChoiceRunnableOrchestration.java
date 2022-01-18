@@ -1,4 +1,4 @@
-package io.github.davidebasile.RunnableOrchestration.Uniform;
+package io.github.contractautomata.RunnableOrchestration.Uniform;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import contractAutomata.automaton.label.Label;
 import contractAutomata.automaton.state.BasicState;
 import contractAutomata.automaton.transition.MSCATransition;
 import contractAutomata.automaton.transition.Transition;
-import io.github.davidebasile.RunnableOrchestration.RunnableOrchestration;
+import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 
 /**
  * Abstract orchestration class resolving choices by assigning 

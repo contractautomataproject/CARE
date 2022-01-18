@@ -1,10 +1,10 @@
-package io.github.davidebasile.RunnableOrchestration.Uniform;
+package io.github.contractautomata.RunnableOrchestration.Uniform;
 
 import java.io.IOException;
 import java.util.List;
 
 import contractAutomata.automaton.MSCA;
-import io.github.davidebasile.RunnableOrchestration.RunnableOrchestratedContract;
+import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 
 public class UniformChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract {
 

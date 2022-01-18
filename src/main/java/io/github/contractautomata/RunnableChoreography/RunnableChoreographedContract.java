@@ -1,4 +1,4 @@
-package io.github.davidebasile.RunnableChoreography;
+package io.github.contractautomata.RunnableChoreography;
 
 import java.util.List;
 

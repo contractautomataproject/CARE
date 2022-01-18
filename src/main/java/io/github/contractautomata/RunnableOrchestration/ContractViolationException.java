@@ -1,4 +1,4 @@
-package io.github.davidebasile.RunnableOrchestration;
+package io.github.contractautomata.RunnableOrchestration;
 
 public class ContractViolationException extends RuntimeException {
 
