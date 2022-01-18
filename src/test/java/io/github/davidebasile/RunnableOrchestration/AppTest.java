@@ -1,4 +1,4 @@
-package io.github.davidebasile.SimpleSocketExample;
+package io.github.davidebasile.RunnableOrchestration;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
