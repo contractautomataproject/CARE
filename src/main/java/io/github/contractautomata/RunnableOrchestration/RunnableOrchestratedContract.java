@@ -3,6 +3,7 @@ package io.github.contractautomata.RunnableOrchestration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -97,15 +98,7 @@ public abstract class RunnableOrchestratedContract implements Runnable, Choice<S
 					for (Method m1 : arrm)
 					{
 						if (m1.getName().equals(action)){
-							Class<?> c=m1.getParameterTypes()[0];
-							Object req=m1.invoke(service,c.cast(oin.readObject()));
-							oout.writeObject(req);
-							oout.flush();
-							
-							if (t.getLabel().isRequest()) {
-								//if the action is a request, the payload from the offerer will be received
-								m1.invoke(service,c.cast(oin.readObject()));
-							}
+							invokeMethod(m1,oin,oout,t);
 						}
 					}
 				} catch(Exception e) {
@@ -122,5 +115,17 @@ public abstract class RunnableOrchestratedContract implements Runnable, Choice<S
 			re.addSuppressed(e);
 			throw new RuntimeException(e);
 		} 
+	}
+	
+	public void invokeMethod(Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
+		Class<?> c=m1.getParameterTypes()[0];
+		Object req=m1.invoke(service,c.cast(oin.readObject()));
+		oout.writeObject(req);
+		oout.flush();
+		
+		if (t.getLabel().isRequest()) {
+			//if the action is a request, the payload from the offerer will be received
+			m1.invoke(service,c.cast(oin.readObject()));
+		}
 	}
 }

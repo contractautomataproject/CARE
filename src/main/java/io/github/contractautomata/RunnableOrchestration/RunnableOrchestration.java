@@ -1,5 +1,6 @@
 package io.github.contractautomata.RunnableOrchestration;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -161,37 +162,9 @@ public abstract class RunnableOrchestration implements Runnable, Choice<String> 
 				System.out.println("Orchestrator, selected transition is "+t.toString());
 
 				if (t.getLabel().isOffer())
-				{
-					//only invokes the offerer and then continue
-					oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
-					oout.get(t.getLabel().getOfferer()).flush();
-					oout.get(t.getLabel().getOfferer()).writeObject(null);
-					oout.get(t.getLabel().getOfferer()).flush();
-					oin.get(t.getLabel().getOfferer()).readObject();
-					
-				}
-				else {
-					// match: firstly interact with the requester
-					oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
-					oout.get(t.getLabel().getRequester()).flush();
-					oout.get(t.getLabel().getRequester()).writeObject(null);
-					oout.get(t.getLabel().getRequester()).flush();
-					
-					Object rep_req = oin.get(t.getLabel().getRequester()).readObject();
-
-					//forwarding the received requester payload to the offerer
-					oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
-					oout.get(t.getLabel().getOfferer()).flush();
-					oout.get(t.getLabel().getOfferer()).writeObject(rep_req);
-					oout.get(t.getLabel().getOfferer()).flush();
-
-					Object rep_off = oin.get(t.getLabel().getOfferer()).readObject();
-					
-					//forwarding the received  offerer payload to the requester
-					oout.get(t.getLabel().getRequester()).writeObject(rep_off);
-					oout.get(t.getLabel().getRequester()).flush();
-					
-				}
+					offer(t,oout,oin);
+				else 
+					match(t,oout,oin);
 				currentState = t.getTarget();
 			}
 
@@ -200,6 +173,37 @@ public abstract class RunnableOrchestration implements Runnable, Choice<String> 
 			re.addSuppressed(e);
 			throw new RuntimeException();
 		}
+	}
+	
+	public void match(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+		// match: firstly interact with the requester
+		oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
+		oout.get(t.getLabel().getRequester()).flush();
+		oout.get(t.getLabel().getRequester()).writeObject(null);
+		oout.get(t.getLabel().getRequester()).flush();
+		
+		Object rep_req = oin.get(t.getLabel().getRequester()).readObject();
+
+		//forwarding the received requester payload to the offerer
+		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+		oout.get(t.getLabel().getOfferer()).flush();
+		oout.get(t.getLabel().getOfferer()).writeObject(rep_req);
+		oout.get(t.getLabel().getOfferer()).flush();
+
+		Object rep_off = oin.get(t.getLabel().getOfferer()).readObject();
+		
+		//forwarding the received  offerer payload to the requester
+		oout.get(t.getLabel().getRequester()).writeObject(rep_off);
+		oout.get(t.getLabel().getRequester()).flush();
+	}
+	
+	public void offer(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+		//only invokes the offerer and then continue
+		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+		oout.get(t.getLabel().getOfferer()).flush();
+		oout.get(t.getLabel().getOfferer()).writeObject(null);
+		oout.get(t.getLabel().getOfferer()).flush();
+		oin.get(t.getLabel().getOfferer()).readObject();
 	}
 }
 
