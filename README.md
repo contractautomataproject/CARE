@@ -1,2 +1,2 @@
-# OrchestrationEngine
-An orchestration engine for Contract Automata
+# Runtime envinronment for Contract Automata
+
