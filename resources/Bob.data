@@ -1,8 +1,0 @@
-Rank: 1
-Initial state: [0]
-Final states: [[Stop]]
-Transitions: 
-([InsEuro],[!coffee],[Stop])
-([0],[?dollar],[InsDollar])
-([InsDollar],[!tea],[Stop])
-([0],[?euro],[InsEuro])

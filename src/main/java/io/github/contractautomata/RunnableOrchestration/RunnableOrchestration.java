@@ -23,7 +23,7 @@ import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorA
 import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorChoice;
 
 /**
- * Abstract class implementing an interpreter/orchestrator of a contract automata orchestration.
+ * Abstract class implementing the runtime environment of a contract automata orchestration.
  * 
  * @author Davide Basile
  */

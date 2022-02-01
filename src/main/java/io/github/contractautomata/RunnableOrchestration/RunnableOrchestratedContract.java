@@ -18,7 +18,7 @@ import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceChoice
 
 /**
  * 
- * Abstract class implementing an interpreter of an orchestrated principal contract automata.
+ * Abstract class implementing the runtime environment of an orchestrated principal contract automata.
  *  
  * @author Davide Basile
  *

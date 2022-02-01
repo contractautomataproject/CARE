@@ -17,3 +17,10 @@ Each <tt>RunnableOrchestratedContract</tt> is a wrapper responsible for pairing 
 This wrapper is listening for invocation commands from the orchestrator, and replies by invoking the corresponding method. In case the invocation is not allowed by the contract, a <tt>ContractViolationException</tt> is raised. This guarantees the adherence of the implementation to the specification.
 
 The <tt>RunnableChoreography</tt> class is currently under development.
+
+
+### Class Diagram
+
+This is the class diagram of CARE.
+
+<img src=""/W>
