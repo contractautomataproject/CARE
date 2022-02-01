@@ -1,5 +1,8 @@
 package io.github.contractautomata.RunnableOrchestration.Uniform;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,6 +14,7 @@ import contractAutomata.automaton.label.Label;
 import contractAutomata.automaton.state.BasicState;
 import contractAutomata.automaton.transition.MSCATransition;
 import contractAutomata.automaton.transition.Transition;
+import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 
 /**
@@ -31,9 +35,23 @@ public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
 		generator = new Random();
 	}
 
+	
 	@Override
-	public String choice(List<String> args)
-	{
+	/**
+	 *  implementation of a branch choice made solely by the orchestrator
+	 * 
+	 * @param oout	output to the services
+	 * @param oin	input from the services
+	 * @return	the selected action to fire
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public String select(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+		
+//		List<String> choices = new ArrayList<>(); 
+//		for (int i=0;i<oin.size();i++)
+//			choices.add((String) oin.get(i).readObject());
+		
 		List<MSCATransition> fs = new ArrayList<>(this.getContract().getForwardStar(this.getCurrentState()));
 		
 		if (this.getCurrentState().isFinalstate())
@@ -45,6 +63,7 @@ public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
 		
 		int n= generator.nextInt(fs.size());
 		return fs.get(n).getLabel().getUnsignedAction();
+
 	}
 
 }

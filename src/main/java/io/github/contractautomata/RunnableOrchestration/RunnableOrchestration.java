@@ -120,7 +120,14 @@ public abstract class RunnableOrchestration implements Runnable, OrchestratorCho
 				//the choice on the transition to fire or to terminate is made beforehand
 				String choice;
 				if (fs.size()>1 || currentState.isFinalstate())
-					choice = select(oout,oin,port);
+				{
+					System.out.println("Orchestrator sending choice message");
+					for (ObjectOutputStream o : oout) {
+						o.writeObject(RunnableOrchestration.choice_msg);
+						o.flush();
+					}
+					choice = select(oout,oin);
+				}
 				else
 					choice = fs.get(0).getLabel().getUnsignedAction();
 

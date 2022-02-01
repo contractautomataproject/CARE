@@ -1,7 +1,8 @@
 package io.github.contractautomata.RunnableOrchestration.Uniform;
 
 import java.io.IOException;
-import java.util.List;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import contractAutomata.automaton.MSCA;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
@@ -13,11 +14,11 @@ public class UniformChoiceRunnableOrchestratedContract extends RunnableOrchestra
 		// TODO Auto-generated constructor stub
 	}
 
+	
 	@Override
-	public String choice(List<String> args) {
-		// TODO Auto-generated method stub
-		return null;
+	public void select(ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
+//		oout.writeObject(null);
+//		oout.flush();
 	}
-
 
 }

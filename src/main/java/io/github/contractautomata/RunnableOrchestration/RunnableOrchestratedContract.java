@@ -80,7 +80,7 @@ public abstract class RunnableOrchestratedContract implements Runnable, ServiceC
 
 				if (action.startsWith(RunnableOrchestration.choice_msg))
 				{
-					select(action,oout);
+					select(oout,oin);
 					continue;
 				}
 

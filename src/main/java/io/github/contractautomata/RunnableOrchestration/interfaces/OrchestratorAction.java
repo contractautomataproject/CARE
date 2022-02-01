@@ -9,6 +9,15 @@ import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 
 public interface OrchestratorAction {
 
+	/**
+	 * default implementation of an action in an orchestration
+	 * 
+	 * @param t			the transition to fire
+	 * @param oout		outputs to the services
+	 * @param oin		inputs from the services
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public default void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 
 		if (t.getLabel().isMatch())
