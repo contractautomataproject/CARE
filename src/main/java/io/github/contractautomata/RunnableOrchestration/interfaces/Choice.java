@@ -1,4 +1,4 @@
-package io.github.contractautomata.RunnableOrchestration;
+package io.github.contractautomata.RunnableOrchestration.interfaces;
 
 import java.util.List;
 

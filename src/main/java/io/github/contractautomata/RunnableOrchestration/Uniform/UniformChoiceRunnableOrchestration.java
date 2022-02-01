@@ -21,7 +21,7 @@ import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
  * @author Davide Basile
  *
  */
-public class UniformChoiceRunnableOrchestration extends RunnableOrchestration  {
+public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
 
 	private final Random generator;
 

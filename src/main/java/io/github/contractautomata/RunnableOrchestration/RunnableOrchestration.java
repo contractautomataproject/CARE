@@ -1,6 +1,5 @@
 package io.github.contractautomata.RunnableOrchestration;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -20,13 +19,15 @@ import contractAutomata.automaton.transition.Transition;
 import contractAutomata.operators.CompositionFunction;
 import contractAutomata.operators.OrchestrationSynthesisOperator;
 import contractAutomata.requirements.StrongAgreement;
+import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorAction;
+import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorChoice;
 
 /**
  * Abstract class implementing an interpreter/orchestrator of a contract automata orchestration.
  * 
  * @author Davide Basile
  */
-public abstract class RunnableOrchestration implements Runnable, Choice<String> {
+public abstract class RunnableOrchestration implements Runnable, OrchestratorChoice, OrchestratorAction {
 
 	public final static String stop_msg = "ORC_STOP";
 	public final static String choice_msg = "ORC_CHOICE";
@@ -119,18 +120,7 @@ public abstract class RunnableOrchestration implements Runnable, Choice<String> 
 				//the choice on the transition to fire or to terminate is made beforehand
 				String choice;
 				if (fs.size()>1 || currentState.isFinalstate())
-				{
-
-					System.out.println("Orchestrator sending choice message");
-					for (ObjectOutputStream o : oout) {
-						o.writeObject(choice_msg);
-						o.flush();
-					}
-					List<String> choices = new ArrayList<>(); 
-					for (int i=0;i<port.size();i++)
-						choices.add((String) oin.get(i).readObject());
-					choice = choice(choices);
-				}
+					choice = select(oout,oin,port);
 				else
 					choice = fs.get(0).getLabel().getUnsignedAction();
 
@@ -161,10 +151,8 @@ public abstract class RunnableOrchestration implements Runnable, Choice<String> 
 
 				System.out.println("Orchestrator, selected transition is "+t.toString());
 
-				if (t.getLabel().isOffer())
-					offer(t,oout,oin);
-				else 
-					match(t,oout,oin);
+				doAction(t,oout,oin);
+				
 				currentState = t.getTarget();
 			}
 
@@ -173,58 +161,5 @@ public abstract class RunnableOrchestration implements Runnable, Choice<String> 
 			re.addSuppressed(e);
 			throw new RuntimeException();
 		}
-	}
-	
-	public void match(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
-		// match: firstly interact with the requester
-		oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
-		oout.get(t.getLabel().getRequester()).flush();
-		oout.get(t.getLabel().getRequester()).writeObject(null);
-		oout.get(t.getLabel().getRequester()).flush();
-		
-		Object rep_req = oin.get(t.getLabel().getRequester()).readObject();
-
-		//forwarding the received requester payload to the offerer
-		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
-		oout.get(t.getLabel().getOfferer()).flush();
-		oout.get(t.getLabel().getOfferer()).writeObject(rep_req);
-		oout.get(t.getLabel().getOfferer()).flush();
-
-		Object rep_off = oin.get(t.getLabel().getOfferer()).readObject();
-		
-		//forwarding the received  offerer payload to the requester
-		oout.get(t.getLabel().getRequester()).writeObject(rep_off);
-		oout.get(t.getLabel().getRequester()).flush();
-	}
-	
-	public void offer(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
-		//only invokes the offerer and then continue
-		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
-		oout.get(t.getLabel().getOfferer()).flush();
-		oout.get(t.getLabel().getOfferer()).writeObject(null);
-		oout.get(t.getLabel().getOfferer()).flush();
-		oin.get(t.getLabel().getOfferer()).readObject();
-	}
+	}	
 }
-
-
-//	private String interactWith(MSCATransition t, AutoCloseableList<BufferedReader> in, 
-//			AutoCloseableList<PrintWriter> out, 
-//			String payload, String partner) throws IOException {
-//		payload = (payload==null)?"()":payload;
-//		Integer ind_partner = (partner.equals("offerer"))?t.getLabel().getOfferer():t.getLabel().getRequester();
-//		out.get(ind_partner).println(t.getLabel().getUnsignedAction()
-//				+payload);
-//		String rep = in.get(ind_partner).readLine();
-//		checkAnswer(rep,
-//				(partner.equals("offerer"))?t.getLabel().getAction():t.getLabel().getCoAction(),
-//						partner);
-//		return rep;
-//	}
-
-//	private void checkAnswer(String rep, String expected, String partner) {
-//		if (!rep.substring(0, rep.indexOf("(")).equals(expected))
-//			new RuntimeException("Expecting \"" +expected+"\""+ System.lineSeparator()+
-//					"Received  answer \""+rep.substring(0, rep.indexOf("(")) +
-//					" from "+partner);
-//	}

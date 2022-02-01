@@ -4,9 +4,6 @@ import java.util.ArrayList;
 
 public class AutoCloseableList<T  extends AutoCloseable > extends ArrayList<T> implements AutoCloseable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@Override

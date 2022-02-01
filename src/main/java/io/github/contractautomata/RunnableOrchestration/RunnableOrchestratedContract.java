@@ -3,11 +3,9 @@ package io.github.contractautomata.RunnableOrchestration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 
 import javax.net.ServerSocketFactory;
 
@@ -15,6 +13,8 @@ import contractAutomata.automaton.MSCA;
 import contractAutomata.automaton.state.CAState;
 import contractAutomata.automaton.state.State;
 import contractAutomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceAction;
+import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceChoice;
 
 /**
  * 
@@ -23,7 +23,7 @@ import contractAutomata.automaton.transition.MSCATransition;
  * @author Davide Basile
  *
  */
-public abstract class RunnableOrchestratedContract implements Runnable, Choice<String> {
+public abstract class RunnableOrchestratedContract implements Runnable, ServiceChoice, ServiceAction {
 
 	private final MSCA contract;
 	private final int port;
@@ -80,9 +80,7 @@ public abstract class RunnableOrchestratedContract implements Runnable, Choice<S
 
 				if (action.startsWith(RunnableOrchestration.choice_msg))
 				{
-					String reply = choice(Arrays.asList(action));
-					oout.writeObject(reply);
-					oout.flush();
+					select(action,oout);
 					continue;
 				}
 
@@ -98,7 +96,7 @@ public abstract class RunnableOrchestratedContract implements Runnable, Choice<S
 					for (Method m1 : arrm)
 					{
 						if (m1.getName().equals(action)){
-							invokeMethod(m1,oin,oout,t);
+							invokeMethod(service,m1,oin,oout,t);
 						}
 					}
 				} catch(Exception e) {
@@ -115,17 +113,5 @@ public abstract class RunnableOrchestratedContract implements Runnable, Choice<S
 			re.addSuppressed(e);
 			throw new RuntimeException(e);
 		} 
-	}
-	
-	public void invokeMethod(Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
-		Class<?> c=m1.getParameterTypes()[0];
-		Object req=m1.invoke(service,c.cast(oin.readObject()));
-		oout.writeObject(req);
-		oout.flush();
-		
-		if (t.getLabel().isRequest()) {
-			//if the action is a request, the payload from the offerer will be received
-			m1.invoke(service,c.cast(oin.readObject()));
-		}
 	}
 }
