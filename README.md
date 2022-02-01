@@ -21,6 +21,6 @@ The <tt>RunnableChoreography</tt> class is currently under development.
 
 ### Class Diagram
 
-This is the class diagram of CARE.
+This is the class diagram of CARE (click on the image to enlarge).
 
-<img src=""/W>
+<img src="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/RunnableOrchestration.png"/>
