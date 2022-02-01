@@ -1,6 +1,7 @@
 # Contract Automata Runtime Environment (CARE)
 
-<tt>CARE</tt>, a newly developed library for implementing applications specified via contract automata.
+<tt>CARE</tt> is a library for implementing applications specified via contract automata. 
+Check https://github.com/ContractAutomataProject/CARE_Example  for an example of usage of <tt>CARE</tt>.
 
  <tt>CARE</tt>  provides a runtime environment to coordinate the <tt>CARE</tt>  services that are implementing the
   contracts of the synthesised orchestration. 
