@@ -1,2 +1,2 @@
-# Runtime envinronment for Contract Automata
+# Contract Automata Runtime Environment 
 
