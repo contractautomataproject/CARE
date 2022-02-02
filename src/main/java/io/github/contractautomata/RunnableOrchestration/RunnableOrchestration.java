@@ -1,5 +1,6 @@
 package io.github.contractautomata.RunnableOrchestration;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -19,15 +20,13 @@ import contractAutomata.automaton.transition.Transition;
 import contractAutomata.operators.CompositionFunction;
 import contractAutomata.operators.OrchestrationSynthesisOperator;
 import contractAutomata.requirements.StrongAgreement;
-import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorAction;
-import io.github.contractautomata.RunnableOrchestration.interfaces.OrchestratorChoice;
 
 /**
  * Abstract class implementing the runtime environment of a contract automata orchestration.
  * 
  * @author Davide Basile
  */
-public abstract class RunnableOrchestration implements Runnable, OrchestratorChoice, OrchestratorAction {
+public abstract class RunnableOrchestration implements Runnable {
 
 	public final static String stop_msg = "ORC_STOP";
 	public final static String choice_msg = "ORC_CHOICE";
@@ -126,7 +125,7 @@ public abstract class RunnableOrchestration implements Runnable, OrchestratorCho
 						o.writeObject(RunnableOrchestration.choice_msg);
 						o.flush();
 					}
-					choice = select(oout,oin);
+					choice = choice(oout,oin);
 				}
 				else
 					choice = fs.get(0).getLabel().getUnsignedAction();
@@ -169,4 +168,27 @@ public abstract class RunnableOrchestration implements Runnable, OrchestratorCho
 			throw new RuntimeException();
 		}
 	}	
+	
+	/**
+	 * 
+	 * @param oout	output to the services
+	 * @param oin	input from the services
+	 * @return	the selected action to fire
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public abstract String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
+	
+	
+	/**
+	 * 
+	 * @param t			the transition to fire
+	 * @param oout		outputs to the services
+	 * @param oin		inputs from the services
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public abstract void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
+
+
 }

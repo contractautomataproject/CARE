@@ -8,10 +8,10 @@ import java.lang.reflect.Method;
 
 import contractAutomata.automaton.transition.MSCATransition;
 
-public interface ServiceAction {
+public interface CentralisedOrchestratedAction {
 	
 	/**
-	 * default implementation for a method invocation commanded by the orchestrator 
+	 * default implementation for a method invocation commanded by the centralised action orchestrator 
 	 * 
 	 * @param service	the class implementing the contract
 	 * @param m1		the method of service to call

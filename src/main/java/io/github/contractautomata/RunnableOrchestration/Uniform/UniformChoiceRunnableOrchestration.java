@@ -16,6 +16,7 @@ import contractAutomata.automaton.transition.MSCATransition;
 import contractAutomata.automaton.transition.Transition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
+import io.github.contractautomata.RunnableOrchestration.interfaces.CentralisedOrchestratorAction;
 
 /**
  * Abstract orchestration class resolving choices by assigning 
@@ -25,7 +26,7 @@ import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
  * @author Davide Basile
  *
  */
-public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
+public class UniformChoiceRunnableOrchestration extends RunnableOrchestration implements CentralisedOrchestratorAction {
 
 	private final Random generator;
 
@@ -46,7 +47,7 @@ public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public String select(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+	public String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 		
 //		List<String> choices = new ArrayList<>(); 
 //		for (int i=0;i<oin.size();i++)
@@ -65,5 +66,15 @@ public class UniformChoiceRunnableOrchestration extends RunnableOrchestration {
 		return fs.get(n).getLabel().getUnsignedAction();
 
 	}
+
+
+	@Override
+	public void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout,
+			AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+		this.doAction(t, oout, oin);
+		
+	}
+
+
 
 }

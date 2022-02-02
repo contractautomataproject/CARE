@@ -7,16 +7,24 @@ import java.io.ObjectOutputStream;
 import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 
-public interface OrchestratorAction {
+public interface CentralisedOrchestratorAction {
 
 	/**
-	 * default implementation of an action in an orchestration
+	 * Default implementation of a centralised action in an orchestration.
+	 * 
+	 * The method of the requester is invoked twice: 
+	 * firstly passing no argument, it generates a value  
+	 * that is passed as parameter to the offerer method, 
+	 * which in turn produces a value that is finally passed 
+	 * as argument to the requester method, thus fulfilling 
+	 * the request.
 	 * 
 	 * @param t			the transition to fire
 	 * @param oout		outputs to the services
 	 * @param oin		inputs from the services
 	 * @throws IOException
 	 * @throws ClassNotFoundException
+	 * 
 	 */
 	public default void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 
@@ -42,7 +50,8 @@ public interface OrchestratorAction {
 			oout.get(t.getLabel().getRequester()).writeObject(rep_off);
 			oout.get(t.getLabel().getRequester()).flush();
 		}
-		else if (t.getLabel().isOffer()){
+		else 
+			if (t.getLabel().isOffer()){
 			//only invokes the offerer and then continue
 			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
 			oout.get(t.getLabel().getOfferer()).flush();

@@ -3,6 +3,7 @@ package io.github.contractautomata.RunnableOrchestration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,8 +14,6 @@ import contractAutomata.automaton.MSCA;
 import contractAutomata.automaton.state.CAState;
 import contractAutomata.automaton.state.State;
 import contractAutomata.automaton.transition.MSCATransition;
-import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceAction;
-import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceChoice;
 
 /**
  * 
@@ -23,7 +22,7 @@ import io.github.contractautomata.RunnableOrchestration.interfaces.ServiceChoice
  * @author Davide Basile
  *
  */
-public abstract class RunnableOrchestratedContract implements Runnable, ServiceChoice, ServiceAction {
+public abstract class RunnableOrchestratedContract implements Runnable {
 
 	private final MSCA contract;
 	private final int port;
@@ -37,7 +36,6 @@ public abstract class RunnableOrchestratedContract implements Runnable, ServiceC
 				.filter(State::isInitial)
 				.findAny()
 				.orElseThrow(IllegalArgumentException::new);
-
 		this.port = port;
 		this.service=service;
 	}
@@ -80,7 +78,7 @@ public abstract class RunnableOrchestratedContract implements Runnable, ServiceC
 
 				if (action.startsWith(RunnableOrchestration.choice_msg))
 				{
-					select(oout,oin);
+					choice(oout,oin);
 					continue;
 				}
 
@@ -114,4 +112,23 @@ public abstract class RunnableOrchestratedContract implements Runnable, ServiceC
 			throw new RuntimeException(e);
 		} 
 	}
+	
+	public abstract void choice(ObjectOutputStream oout, ObjectInputStream oin) throws IOException;
+	
+	/**
+	 * 
+	 * @param service	the class implementing the contract
+	 * @param m1		the method of service to call
+	 * @param oin		input from the orchestrator
+	 * @param oout		output to the orchestrator
+	 * @param t			transition of the contract selected to be fired
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	public abstract void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException;
+
+
 }
