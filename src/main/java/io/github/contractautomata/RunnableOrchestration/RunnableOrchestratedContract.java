@@ -65,7 +65,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 			while (true) {
 				//receive message from orchestrator
 				String action = (String) oin.readObject();
-				
+					
 				System.out.println("Service on host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort()+": received message "+action);
 
 				if (action.equals(RunnableOrchestration.stop_msg))
@@ -106,14 +106,14 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 				//update state
 				currentState=t.getTarget();
 			}
-		} catch (IOException|ClassNotFoundException e) {
+		} catch (Exception e) {
 			RuntimeException re = new RuntimeException();
 			re.addSuppressed(e);
 			throw new RuntimeException(e);
 		} 
 	}
 	
-	public abstract void choice(ObjectOutputStream oout, ObjectInputStream oin) throws IOException;
+	public abstract void choice(ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
 	
 	/**
 	 * 
@@ -128,7 +128,6 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public abstract void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException;
-
+	public abstract void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws Exception;
 
 }

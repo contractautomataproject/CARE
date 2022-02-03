@@ -117,8 +117,8 @@ public abstract class RunnableOrchestration implements Runnable {
 
 
 				//the choice on the transition to fire or to terminate is made beforehand
-				String choice;
-				if (fs.size()>1 || currentState.isFinalstate())
+				final String choice;
+				if (fs.size()>1 || (currentState.isFinalstate() && fs.size()==1))
 				{
 					System.out.println("Orchestrator sending choice message");
 					for (ObjectOutputStream o : oout) {
@@ -127,8 +127,10 @@ public abstract class RunnableOrchestration implements Runnable {
 					}
 					choice = choice(oout,oin);
 				}
-				else
+				else if (fs.size()==1)
 					choice = fs.get(0).getLabel().getUnsignedAction();
+				else
+					choice="";//for initialization
 
 				//check final state
 				if (currentState.isFinalstate() && (fs.isEmpty()||choice==stop_choice))
@@ -163,6 +165,7 @@ public abstract class RunnableOrchestration implements Runnable {
 			}
 
 		}catch (Exception e) {
+			System.out.println(e.getMessage());
 			RuntimeException re = new RuntimeException();
 			re.addSuppressed(e);
 			throw new RuntimeException();

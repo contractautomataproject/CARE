@@ -1,4 +1,4 @@
-package io.github.contractautomata.RunnableOrchestration.Uniform;
+package io.github.contractautomata.RunnableOrchestration.impl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,11 +9,11 @@ import java.lang.reflect.Method;
 import contractAutomata.automaton.MSCA;
 import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
-import io.github.contractautomata.RunnableOrchestration.interfaces.CentralisedOrchestratedAction;
+import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrchestratedAction;
 
-public class UniformChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract implements CentralisedOrchestratedAction {
-
-	public UniformChoiceRunnableOrchestratedContract(MSCA contract, int port, Object service) throws IOException {
+public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract implements CentralisedOrchestratedAction {
+	
+	public DictatorialChoiceRunnableOrchestratedContract(MSCA contract, int port, Object service) throws IOException {
 		super(contract, port, service);
 		// TODO Auto-generated constructor stub
 	}
@@ -21,8 +21,6 @@ public class UniformChoiceRunnableOrchestratedContract extends RunnableOrchestra
 	
 	@Override
 	public void choice(ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
-//		oout.writeObject(null);
-//		oout.flush();
 	}
 
 

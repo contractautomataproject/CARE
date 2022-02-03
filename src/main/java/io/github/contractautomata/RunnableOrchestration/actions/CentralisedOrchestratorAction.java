@@ -1,4 +1,4 @@
-package io.github.contractautomata.RunnableOrchestration.interfaces;
+package io.github.contractautomata.RunnableOrchestration.actions;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

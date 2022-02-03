@@ -1,4 +1,4 @@
-package io.github.contractautomata.RunnableOrchestration.Uniform;
+package io.github.contractautomata.RunnableOrchestration.impl;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,21 +16,21 @@ import contractAutomata.automaton.transition.MSCATransition;
 import contractAutomata.automaton.transition.Transition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
-import io.github.contractautomata.RunnableOrchestration.interfaces.CentralisedOrchestratorAction;
+import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrchestratorAction;
 
 /**
- * Abstract orchestration class resolving choices by assigning 
- * a uniform distribution and picking one. 
- * When in a final state, there is 50% chance of terminating.
+ * Orchestration class resolving choices by assigning 
+ * a uniform distribution and picking one, with 
+ *  50% chance of terminating when possible.
  * 
  * @author Davide Basile
  *
  */
-public class UniformChoiceRunnableOrchestration extends RunnableOrchestration implements CentralisedOrchestratorAction {
+public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestration implements CentralisedOrchestratorAction {
 
 	private final Random generator;
 
-	public UniformChoiceRunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
+	public DictatorialChoiceRunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
 			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port) {
 		super(req, pred, contracts, hosts, port);
 		generator = new Random();
@@ -48,10 +48,6 @@ public class UniformChoiceRunnableOrchestration extends RunnableOrchestration im
 	 * @throws ClassNotFoundException
 	 */
 	public String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
-		
-//		List<String> choices = new ArrayList<>(); 
-//		for (int i=0;i<oin.size();i++)
-//			choices.add((String) oin.get(i).readObject());
 		
 		List<MSCATransition> fs = new ArrayList<>(this.getContract().getForwardStar(this.getCurrentState()));
 		
