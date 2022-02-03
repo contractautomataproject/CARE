@@ -3,7 +3,6 @@ package io.github.contractautomata.RunnableOrchestration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,6 +13,7 @@ import contractAutomata.automaton.MSCA;
 import contractAutomata.automaton.state.CAState;
 import contractAutomata.automaton.state.State;
 import contractAutomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
 
 /**
  * 
@@ -28,8 +28,8 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	private final int port;
 	private CAState currentState;
 	private final Object service;
-
-	public RunnableOrchestratedContract(MSCA contract, int port, Object service) throws IOException {
+	private OrchestratedAction act;
+	public RunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
 		super();
 		this.contract = contract;
 		this.currentState = contract.getStates().parallelStream()
@@ -38,8 +38,9 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 				.orElseThrow(IllegalArgumentException::new);
 		this.port = port;
 		this.service=service;
+		this.act=act;
 	}
-	
+
 
 	public int getPort() {
 		return port;
@@ -65,7 +66,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 			while (true) {
 				//receive message from orchestrator
 				String action = (String) oin.readObject();
-					
+
 				System.out.println("Service on host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort()+": received message "+action);
 
 				if (action.equals(RunnableOrchestration.stop_msg))
@@ -94,7 +95,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 					for (Method m1 : arrm)
 					{
 						if (m1.getName().equals(action)){
-							invokeMethod(service,m1,oin,oout,t);
+							act.invokeMethod(service, m1, oin, oout, t);
 						}
 					}
 				} catch(Exception e) {
@@ -112,22 +113,8 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 			throw new RuntimeException(e);
 		} 
 	}
-	
+
 	public abstract void choice(ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
-	
-	/**
-	 * 
-	 * @param service	the class implementing the contract
-	 * @param m1		the method of service to call
-	 * @param oin		input from the orchestrator
-	 * @param oout		output to the orchestrator
-	 * @param t			transition of the contract selected to be fired
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 */
-	public abstract void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws Exception;
+
 
 }

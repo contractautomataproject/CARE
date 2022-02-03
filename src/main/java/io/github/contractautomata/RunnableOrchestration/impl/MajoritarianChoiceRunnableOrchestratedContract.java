@@ -3,15 +3,12 @@ package io.github.contractautomata.RunnableOrchestration.impl;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Random;
 
 import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
-import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrchestratedAction;
+import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
 
 /**
  * The service when asked upon send its branch/termination choice, 
@@ -21,12 +18,12 @@ import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrche
  * @author Davide Basile
  *
  */
-public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract implements CentralisedOrchestratedAction  {
+public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract   {
 
 	private final Random generator;
 
-	public MajoritarianChoiceRunnableOrchestratedContract(MSCA contract, int port, Object service) throws IOException {
-		super(contract, port, service);
+	public MajoritarianChoiceRunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
+		super(contract, port, service, act);
 		generator = new Random();
 	}
 
@@ -51,13 +48,6 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 		oout.flush();		
 	}
 
-	@Override
-	public void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout,
-			MSCATransition t) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-	ClassNotFoundException, IOException {
-		CentralisedOrchestratedAction.super.invokeMethod(service, m1, oin, oout, t);
-
-	}
 	
 	/**
 	 * To override for changing policy of selection

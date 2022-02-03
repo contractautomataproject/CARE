@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 
-public interface CentralisedOrchestratorAction {
+public class CentralisedOrchestratorAction  implements OrchestratorAction {
 
 	/**
 	 * Default implementation of a centralised action in an orchestration.
@@ -26,7 +26,7 @@ public interface CentralisedOrchestratorAction {
 	 * @throws ClassNotFoundException
 	 * 
 	 */
-	public default void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+	public void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 
 		if (t.getLabel().isMatch())
 		{

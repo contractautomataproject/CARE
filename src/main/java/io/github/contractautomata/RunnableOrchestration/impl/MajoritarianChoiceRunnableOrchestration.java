@@ -19,7 +19,7 @@ import contractAutomata.automaton.transition.MSCATransition;
 import contractAutomata.automaton.transition.Transition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
-import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrchestratorAction;
+import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
 
 /**
  * each choice is solved by asking the services, and selecting the (or one of the) 
@@ -28,11 +28,12 @@ import io.github.contractautomata.RunnableOrchestration.actions.CentralisedOrche
  * @author Davide Basile
  *
  */
-public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestration implements CentralisedOrchestratorAction{
+public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestration {
+	
 
 	public MajoritarianChoiceRunnableOrchestration(Automaton<String, BasicState, Transition<String, BasicState, Label>> req,
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port) {
-		super(req, pred, contracts, hosts, port);
+			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
+		super(req, pred, contracts, hosts, port, act);
 	}
 
 	@Override
@@ -75,11 +76,6 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		
 	}
 
-	@Override
-	public void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout,
-			AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
-		CentralisedOrchestratorAction.super.doAction(t, oout, oin);
-		
-	}
+	
 
 }

@@ -20,6 +20,7 @@ import contractAutomata.automaton.transition.Transition;
 import contractAutomata.operators.CompositionFunction;
 import contractAutomata.operators.OrchestrationSynthesisOperator;
 import contractAutomata.requirements.StrongAgreement;
+import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
 
 /**
  * Abstract class implementing the runtime environment of a contract automata orchestration.
@@ -36,9 +37,11 @@ public abstract class RunnableOrchestration implements Runnable {
 	private final MSCA contract;
 	private final Predicate<MSCATransition> pred;
 	private CAState currentState;
+	private OrchestratorAction act;
+
 
 	public RunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port) {
+			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -61,10 +64,11 @@ public abstract class RunnableOrchestration implements Runnable {
 				.filter(State::isInitial)
 				.findAny()
 				.orElseThrow(IllegalArgumentException::new);
+		this.act=act;
 	}
 
 	public RunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
-			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port) {
+			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -78,6 +82,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				.filter(State::isInitial)
 				.findAny()
 				.orElseThrow(IllegalArgumentException::new);
+		this.act=act;
 	}
 	
 	public MSCA getContract() {
@@ -159,13 +164,12 @@ public abstract class RunnableOrchestration implements Runnable {
 
 				System.out.println("Orchestrator, selected transition is "+t.toString());
 
-				doAction(t,oout,oin);
+				act.doAction(t, oout, oin);
 				
 				currentState = t.getTarget();
 			}
 
 		}catch (Exception e) {
-			System.out.println(e.getMessage());
 			RuntimeException re = new RuntimeException();
 			re.addSuppressed(e);
 			throw new RuntimeException();
@@ -182,16 +186,4 @@ public abstract class RunnableOrchestration implements Runnable {
 	 */
 	public abstract String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
 	
-	
-	/**
-	 * 
-	 * @param t			the transition to fire
-	 * @param oout		outputs to the services
-	 * @param oin		inputs from the services
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 */
-	public abstract void doAction(MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
-
-
 }
