@@ -8,10 +8,10 @@ import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 
-public class CentralisedOrchestratorAction  implements OrchestratorAction {
+public class DistributedOrchestratorAction  implements OrchestratorAction {
+	
 
 	/**
-	 * Default implementation of a centralised action in an orchestration.
 	 * 
 	 * The method of the requester is invoked twice: 
 	 * firstly passing no argument, it generates a value  
@@ -27,35 +27,39 @@ public class CentralisedOrchestratorAction  implements OrchestratorAction {
 	 * @throws ClassNotFoundException
 	 * 
 	 */
-	public void doAction(RunnableOrchestration ro, MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+	public void doAction(RunnableOrchestration ro, MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, 
+			AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+
+		//send action to the offerer
+		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+		oout.get(t.getLabel().getOfferer()).flush();
 
 		if (t.getLabel().isMatch())
 		{
-			// match: firstly interact with the requester
+			//send action to requester
 			oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
 			oout.get(t.getLabel().getRequester()).flush();
-			oout.get(t.getLabel().getRequester()).writeObject(null);
-			oout.get(t.getLabel().getRequester()).flush();
-
-			Object rep_req = oin.get(t.getLabel().getRequester()).readObject();
-
-			//forwarding the received requester payload to the offerer
-			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+			
+			//send type to the offerer
+			oout.get(t.getLabel().getOfferer()).writeObject("match");
 			oout.get(t.getLabel().getOfferer()).flush();
-			oout.get(t.getLabel().getOfferer()).writeObject(rep_req);
-			oout.get(t.getLabel().getOfferer()).flush();
-
-			Object rep_off = oin.get(t.getLabel().getOfferer()).readObject();
-
-			//forwarding the received  offerer payload to the requester
-			oout.get(t.getLabel().getRequester()).writeObject(rep_off);
+			
+			//send address and port of the offerer to the requester
+			oout.get(t.getLabel().getRequester()).writeObject(ro.getAddresses().get(t.getLabel().getOfferer()));
 			oout.get(t.getLabel().getRequester()).flush();
+			oout.get(t.getLabel().getRequester()).writeObject(ro.getPorts().get(t.getLabel().getOfferer()));
+			oout.get(t.getLabel().getRequester()).flush();
+			
+			//wait ack from the requester
+			oin.get(t.getLabel().getRequester()).readObject();
+
 		}
-		else 
-			if (t.getLabel().isOffer()){
-			//only invokes the offerer and then continue
-			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+		else if (t.getLabel().isOffer()){
+			//send type to the offerer
+			oout.get(t.getLabel().getOfferer()).writeObject("offer");
 			oout.get(t.getLabel().getOfferer()).flush();
+
+			//only invokes the offerer without a request and then continue
 			oout.get(t.getLabel().getOfferer()).writeObject(null);
 			oout.get(t.getLabel().getOfferer()).flush();
 			oin.get(t.getLabel().getOfferer()).readObject();

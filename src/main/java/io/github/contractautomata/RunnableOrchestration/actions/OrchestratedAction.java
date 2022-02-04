@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import contractAutomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 
 public interface OrchestratedAction {
 	
@@ -23,5 +24,5 @@ public interface OrchestratedAction {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public void invokeMethod(Object service, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws Exception;
+	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws Exception;
 }

@@ -32,8 +32,8 @@ public abstract class RunnableOrchestration implements Runnable {
 	public final static String stop_msg = "ORC_STOP";
 	public final static String choice_msg = "ORC_CHOICE";
 	public final static String stop_choice = "CHOICE_STOP";
-	private final List<Integer> port;
-	private final List<String> hosts;
+	private final List<Integer> ports;
+	private final List<String> addresses;
 	private final MSCA contract;
 	private final Predicate<MSCATransition> pred;
 	private CAState currentState;
@@ -58,8 +58,8 @@ public abstract class RunnableOrchestration implements Runnable {
 
 
 		this.pred=pred;
-		this.hosts = hosts;
-		this.port = port;
+		this.addresses = hosts;
+		this.ports = port;
 		this.currentState = contract.getStates().parallelStream()
 				.filter(State::isInitial)
 				.findAny()
@@ -76,8 +76,8 @@ public abstract class RunnableOrchestration implements Runnable {
 
 		this.pred=pred;
 		this.contract = orchestration; 
-		this.hosts = hosts;
-		this.port = port;
+		this.addresses = hosts;
+		this.ports = port;
 		this.currentState = contract.getStates().parallelStream()
 				.filter(State::isInitial)
 				.findAny()
@@ -92,6 +92,16 @@ public abstract class RunnableOrchestration implements Runnable {
 	public CAState getCurrentState() {
 		return currentState;
 	}
+	
+	
+
+	public List<Integer> getPorts() {
+		return ports;
+	}
+
+	public List<String> getAddresses() {
+		return addresses;
+	}
 
 	@Override
 	public void run() {
@@ -100,8 +110,8 @@ public abstract class RunnableOrchestration implements Runnable {
 				AutoCloseableList<ObjectInputStream> oin = new AutoCloseableList<ObjectInputStream>();)
 		{
 			//initialising i/o
-			for (int i=0;i<port.size();i++) {
-				Socket s = new Socket(InetAddress.getByName(hosts.get(i)), port.get(i));
+			for (int i=0;i<ports.size();i++) {
+				Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
 				sockets.add(s);
 				oout.add(new ObjectOutputStream(s.getOutputStream()));
 				oout.get(i).flush();
@@ -164,7 +174,7 @@ public abstract class RunnableOrchestration implements Runnable {
 
 				System.out.println("Orchestrator, selected transition is "+t.toString());
 
-				act.doAction(t, oout, oin);
+				act.doAction(this, t, oout, oin);
 				
 				currentState = t.getTarget();
 			}

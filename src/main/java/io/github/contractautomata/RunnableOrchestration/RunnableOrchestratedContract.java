@@ -28,7 +28,8 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	private final int port;
 	private CAState currentState;
 	private final Object service;
-	private OrchestratedAction act;
+	private final OrchestratedAction act;
+
 	public RunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
 		super();
 		this.contract = contract;
@@ -41,6 +42,73 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 		this.act=act;
 	}
 
+	class ConnectionHandler extends Thread {
+		
+		private Socket socket;
+		
+		public ConnectionHandler(Socket socket) {
+			this.socket=socket;
+		}
+
+		@Override
+		public void run() {
+			try    (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
+					ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream());)
+			{
+				oout.flush();
+				System.out.println("Connection with service started host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort());
+				while (true) {
+					//receive message from orchestrator
+					String action = (String) oin.readObject();
+
+					System.out.println("Service on host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort()+": received message "+action);
+
+					if (action.equals(RunnableOrchestration.stop_msg))
+					{
+						if (currentState.isFinalstate())
+							break;
+						else
+							throw new RuntimeException("Not in a final state!");
+					}
+
+					if (action.startsWith(RunnableOrchestration.choice_msg))
+					{
+						choice(oout,oin);
+						continue;
+					}
+
+					//find a transition to fire
+					MSCATransition t = contract.getForwardStar(currentState)
+							.stream()
+							.filter(tr->tr.getLabel().getUnsignedAction().equals(action))
+							.findAny()
+							.orElseThrow(UnsupportedOperationException::new);
+
+					try {
+						Method[] arrm = service.getClass().getMethods();
+						for (Method m1 : arrm)
+						{
+							if (m1.getName().equals(action)){
+								act.invokeMethod(RunnableOrchestratedContract.this, m1, oin, oout, t);
+							}
+						}
+					} catch(Exception e) {
+						ContractViolationException re = new ContractViolationException();
+						re.addSuppressed(e);
+						throw re;
+					}
+
+					//update state
+					currentState=t.getTarget();
+				}
+			} catch (Exception e) {
+				RuntimeException re = new RuntimeException();
+				re.addSuppressed(e);
+				throw new RuntimeException(e);
+			}
+			
+		}
+	}
 
 	public int getPort() {
 		return port;
@@ -54,67 +122,27 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 		return currentState;
 	}
 
+	public Object getService() {
+		return service;
+	}
+	
 	@Override
 	public void run() {
-		try    (final ServerSocket s =  ServerSocketFactory.getDefault().createServerSocket(port);
-				final Socket socket = s.accept();
-				ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
-				ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream());)
+		try (ServerSocket servsock =  ServerSocketFactory.getDefault().createServerSocket(port);)
 		{
-			oout.flush();
-			System.out.println("Connection with service started host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort());
-			while (true) {
-				//receive message from orchestrator
-				String action = (String) oin.readObject();
-
-				System.out.println("Service on host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort()+": received message "+action);
-
-				if (action.equals(RunnableOrchestration.stop_msg))
-				{
-					if (currentState.isFinalstate())
-						break;
-					else
-						throw new RuntimeException("Not in a final state!");
-				}
-
-				if (action.startsWith(RunnableOrchestration.choice_msg))
-				{
-					choice(oout,oin);
-					continue;
-				}
-
-				//find a transition to fire
-				MSCATransition t = contract.getForwardStar(currentState)
-						.stream()
-						.filter(tr->tr.getLabel().getUnsignedAction().equals(action))
-						.findAny()
-						.orElseThrow(UnsupportedOperationException::new);
-
-				try {
-					Method[] arrm = service.getClass().getMethods();
-					for (Method m1 : arrm)
-					{
-						if (m1.getName().equals(action)){
-							act.invokeMethod(service, m1, oin, oout, t);
-						}
-					}
-				} catch(Exception e) {
-					ContractViolationException re = new ContractViolationException();
-					re.addSuppressed(e);
-					throw re;
-				}
-
-				//update state
-				currentState=t.getTarget();
-			}
-		} catch (Exception e) {
+		    while (true)
+				new ConnectionHandler(servsock.accept()).start();
+		} catch (IOException e2) {
 			RuntimeException re = new RuntimeException();
-			re.addSuppressed(e);
-			throw new RuntimeException(e);
+			re.addSuppressed(e2);
+			throw new RuntimeException(e2);
 		} 
 	}
+
 
 	public abstract void choice(ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
 
 
 }
+
+	
