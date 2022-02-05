@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import contractAutomata.automaton.MSCA;
+import contractAutomata.automaton.state.CAState;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
 
@@ -17,7 +18,7 @@ public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrche
 
 	
 	@Override
-	public void choice(ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
+	public void choice(CAState currentState,ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
 	}
 
 

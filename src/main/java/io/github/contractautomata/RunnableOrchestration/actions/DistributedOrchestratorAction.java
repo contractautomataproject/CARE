@@ -44,10 +44,13 @@ public class DistributedOrchestratorAction  implements OrchestratorAction {
 			oout.get(t.getLabel().getOfferer()).writeObject("match");
 			oout.get(t.getLabel().getOfferer()).flush();
 			
+			//receive the port where the offerer is waiting for the requester
+			int port = (Integer) oin.get(t.getLabel().getOfferer()).readObject();
+			
 			//send address and port of the offerer to the requester
 			oout.get(t.getLabel().getRequester()).writeObject(ro.getAddresses().get(t.getLabel().getOfferer()));
 			oout.get(t.getLabel().getRequester()).flush();
-			oout.get(t.getLabel().getRequester()).writeObject(ro.getPorts().get(t.getLabel().getOfferer()));
+			oout.get(t.getLabel().getRequester()).writeObject(port);
 			oout.get(t.getLabel().getRequester()).flush();
 			
 			//wait ack from the requester

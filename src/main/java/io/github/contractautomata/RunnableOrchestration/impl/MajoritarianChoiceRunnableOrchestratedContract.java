@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.util.Random;
 
 import contractAutomata.automaton.MSCA;
+import contractAutomata.automaton.state.CAState;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
@@ -28,7 +29,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	}
 
 	@Override
-	public void choice(ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
+	public void choice(CAState currentState, ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
 
 		//receive message from orchestrator on whether to choose or skip
 		String action = (String) oin.readObject();
@@ -41,7 +42,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 		//receiving the possible choices
 		String[] toChoose = (String[]) oin.readObject();
 		
-		String select =select(toChoose);
+		String select =select(currentState, toChoose);
 		
 		//sending the selected choice
 		oout.writeObject(select);
@@ -55,8 +56,8 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	 * @param toChoose  the list of possible choices
 	 * @return the choice made to be communicated to the orchestrator
 	 */
-	public String select(String[] toChoose) {
-		if (this.getCurrentState().isFinalstate()&&generator.nextInt(2)==0) //50% chance of terminating
+	public String select(CAState currentState, String[] toChoose) {
+		if (currentState.isFinalstate()&&generator.nextInt(2)==0) //50% chance of terminating
 			return RunnableOrchestration.stop_choice; 
 		else		
 			return toChoose[generator.nextInt(toChoose.length)];

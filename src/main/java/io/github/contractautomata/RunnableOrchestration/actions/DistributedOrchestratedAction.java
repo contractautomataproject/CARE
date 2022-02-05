@@ -6,9 +6,8 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
-
-import javax.net.ServerSocketFactory;
 
 import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
@@ -38,11 +37,14 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 			//receive type from the orchestrator
 			String type = (String)oin.readObject();
 
-
 			if (type.equals("match"))	
 			{
 				//if is a match communicate with the requester
-				try (	Socket socket = ServerSocketFactory.getDefault().createServerSocket(rc.getPort()+1).accept();
+				
+				ServerSocket ss = new ServerSocket(0);//find a port available
+				oout.writeObject(ss.getLocalPort());//communicate the port to the orchestrator
+				
+				try (	Socket socket = ss.accept();
 						ObjectInputStream osin = new ObjectInputStream(socket.getInputStream());
 						ObjectOutputStream osout = new ObjectOutputStream(socket.getOutputStream());){
 
@@ -60,21 +62,24 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 				} catch (Exception e) {
 					RuntimeException re = new RuntimeException();
 					re.addSuppressed(e);
+					ss.close();
 					throw re;
 				}
+				ss.close();
 			}
 			else { //if is an offer communicate with the orchestrator
 				Object req=m1.invoke(rc.getService(),c.cast(oin.readObject()));
 				oout.writeObject(req);
 				oout.flush();
 			}
+			
 		}
 		else if (t.getLabel().isRequest()) {
 			final Object req=m1.invoke(rc.getService(),c.cast(null));
 			final String address = (String) oin.readObject();
 			final Integer port = (Integer) oin.readObject();
 
-			try (Socket socket = new Socket(InetAddress.getByName(address), port+1);
+			try (Socket socket = new Socket(InetAddress.getByName(address), port);
 					ObjectOutputStream osout = new ObjectOutputStream(socket.getOutputStream());
 					ObjectInputStream osin = new ObjectInputStream(socket.getInputStream());)
 			{
