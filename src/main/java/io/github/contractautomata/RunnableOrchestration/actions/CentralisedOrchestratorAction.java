@@ -62,5 +62,10 @@ public class CentralisedOrchestratorAction  implements OrchestratorAction {
 		}
 		else throw new IllegalArgumentException("The transition is not an offer nor a request");
 	}		
+	
+	@Override
+	public String getActionType() {
+		return "Centralised";
+	}		
 }
 

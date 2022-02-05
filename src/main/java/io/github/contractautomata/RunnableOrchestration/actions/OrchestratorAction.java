@@ -21,5 +21,6 @@ public interface OrchestratorAction {
 	 */
 	public void doAction(RunnableOrchestration ro, MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException ; 
 	
+	public String getActionType();
 }
 

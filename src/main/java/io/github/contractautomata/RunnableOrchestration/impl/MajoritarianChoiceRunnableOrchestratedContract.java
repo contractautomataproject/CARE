@@ -63,4 +63,8 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 			return toChoose[generator.nextInt(toChoose.length)];
 	}
 
+	@Override
+	public String getChoiceType() {
+		return "Majoritarian";
+	}
 }

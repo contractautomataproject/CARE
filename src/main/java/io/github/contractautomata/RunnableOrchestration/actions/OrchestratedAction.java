@@ -25,4 +25,6 @@ public interface OrchestratedAction {
 	 * @throws IOException
 	 */
 	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws Exception;
+
+	public String getActionType();
 }

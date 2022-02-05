@@ -3,6 +3,7 @@ package io.github.contractautomata.RunnableOrchestration.impl;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 	
 
 	public MajoritarianChoiceRunnableOrchestration(Automaton<String, String, BasicState, Transition<String, String, BasicState, Label<String>>> req,
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
+			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super(req, pred, contracts, hosts, port, act);
 	}
 
@@ -74,6 +75,11 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		.entrySet().stream()
 		.max((x,y)->x.getValue().intValue()-y.getValue().intValue()).orElseThrow(RuntimeException::new).getKey();
 		
+	}
+
+	@Override
+	public String getChoiceType() {
+		return "Majoritarian";
 	}
 
 	

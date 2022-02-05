@@ -46,9 +46,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 				.findFirst().orElseThrow(IllegalArgumentException::new);
 				TypedCALabel tcl = new TypedCALabel(t.getLabel(),met.getParameterTypes()[0],met.getReturnType());
 				return new MSCATransition(t.getSource(),tcl,t.getTarget(),t.getModality());})
-					.collect(Collectors.toSet())
-				);
-
+					.collect(Collectors.toSet()));
 	}
 
 
@@ -94,6 +92,10 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 
 								System.out.println("Service on host " + socket.getLocalAddress().toString() + ", port "+socket.getLocalPort()+": received message "+action);
 
+								if (action.equals(RunnableOrchestration.check_msg)) {
+									check(oin, oout);
+									break;
+								}
 								if (action.equals(RunnableOrchestration.stop_msg))
 								{
 									if (currentState.isFinalstate())
@@ -132,12 +134,15 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 								//update state
 								currentState=t.getTarget();
 							}
+									
 						} catch (Exception e) {
 							RuntimeException re = new RuntimeException();
 							re.addSuppressed(e);
 							throw new RuntimeException(e);
 						}
 
+						System.out.println("Session terminated at host " + socket.getLocalAddress().toString() 
+								+ ", port "+socket.getLocalPort()); 
 					}
 				}.start();
 			}
@@ -151,6 +156,21 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 
 	public abstract void choice(CAState currentState,ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
 
+	public abstract String getChoiceType();
+	
+	
+	private void check(ObjectInputStream oin, ObjectOutputStream oout) throws ClassNotFoundException, IOException {
+		String orcChoiceType = (String) oin.readObject();
+		String orcActType = (String) oin.readObject();
+		
+		if (orcChoiceType.equals(this.getChoiceType())&&orcActType.equals(this.act.getActionType()))
+			oout.writeObject(RunnableOrchestration.ack_msg);
+		else {
+			String msg = (orcChoiceType.equals(this.getChoiceType())?"":"uncompatible choice ") +
+						 (orcActType.equals(this.act.getActionType())?"":" uncompatible action");
+			oout.writeObject(msg);
+		}
+	}
 
 }
 

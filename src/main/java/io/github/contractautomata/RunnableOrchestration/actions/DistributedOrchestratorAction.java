@@ -67,6 +67,11 @@ public class DistributedOrchestratorAction  implements OrchestratorAction {
 			oin.get(t.getLabel().getOfferer()).readObject();
 		}
 		else throw new IllegalArgumentException("The transition is not an offer nor a request");
+	}
+
+	@Override
+	public String getActionType() {
+		return "Distributed";
 	}		
 }
 

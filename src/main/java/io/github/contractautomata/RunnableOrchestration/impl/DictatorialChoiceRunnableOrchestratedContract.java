@@ -16,10 +16,12 @@ public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrche
 		// TODO Auto-generated constructor stub
 	}
 
-	
 	@Override
 	public void choice(CAState currentState,ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
 	}
 
-
+	@Override
+	public String getChoiceType() {
+		return "Distributed";
+	}
 }

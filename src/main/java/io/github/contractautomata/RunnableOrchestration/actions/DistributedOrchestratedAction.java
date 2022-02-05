@@ -103,4 +103,9 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 		}
 
 	}
+	
+	@Override
+	public String getActionType() {
+		return "Distributed";
+	}		
 }

@@ -3,6 +3,7 @@ package io.github.contractautomata.RunnableOrchestration.impl;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -31,7 +32,7 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 	private final Random generator;
 
 	public DictatorialChoiceRunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
+			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super(req, pred, contracts, hosts, port,act);
 		generator = new Random();
 	}
@@ -61,6 +62,11 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 		int n= generator.nextInt(fs.size());
 		return fs.get(n).getLabel().getUnsignedAction();
 
+	}
+	
+	@Override
+	public String getChoiceType() {
+		return "Distributed";
 	}
 
 }

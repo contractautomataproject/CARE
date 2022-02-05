@@ -36,5 +36,11 @@ public class CentralisedOrchestratedAction implements OrchestratedAction {
 			m1.invoke(rc.getService(),c.cast(oin.readObject()));
 		}
 	}
+	
+
+	@Override
+	public String getActionType() {
+		return "Centralised";
+	}		
 
 }

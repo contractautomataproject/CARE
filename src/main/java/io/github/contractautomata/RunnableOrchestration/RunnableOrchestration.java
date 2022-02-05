@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -31,8 +32,11 @@ import io.github.davidebasile.contractautomata.requirements.StrongAgreement;
 public abstract class RunnableOrchestration implements Runnable {
 
 	public final static String stop_msg = "ORC_STOP";
+	public final static String ack_msg= "ACK";
 	public final static String choice_msg = "ORC_CHOICE";
 	public final static String stop_choice = "CHOICE_STOP";
+	public final static String check_msg = "ORC_CHECK";
+
 	private final List<Integer> ports;
 	private final List<String> addresses;
 	private final MSCA contract;
@@ -42,7 +46,7 @@ public abstract class RunnableOrchestration implements Runnable {
 
 
 	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
+			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -58,6 +62,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		this.addresses = hosts;
 		this.ports = port;
 		this.act=act;
+		checkCompatibility();
 
 		MSCA comp=new CompositionFunction(contracts).apply(pred.negate(),Integer.MAX_VALUE);
 		contract = new OrchestrationSynthesisOperator(pred,req).apply(comp); 
@@ -65,7 +70,7 @@ public abstract class RunnableOrchestration implements Runnable {
 	}
 
 	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port, OrchestratorAction act) {
+			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -76,6 +81,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		this.addresses = hosts;
 		this.ports = port;
 		this.act=act;
+		checkCompatibility();
 	}
 
 	public MSCA getContract() {
@@ -114,7 +120,6 @@ public abstract class RunnableOrchestration implements Runnable {
 				AutoCloseableList<ObjectOutputStream> oout = new AutoCloseableList<ObjectOutputStream>();
 				AutoCloseableList<ObjectInputStream> oin = new AutoCloseableList<ObjectInputStream>();)
 		{
-			//initialising i/o
 			for (int i=0;i<ports.size();i++) {
 				Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
 				sockets.add(s);
@@ -122,7 +127,6 @@ public abstract class RunnableOrchestration implements Runnable {
 				oout.get(i).flush();
 				oin.add(new ObjectInputStream(s.getInputStream()));
 			}
-
 
 			while(true)
 			{
@@ -155,7 +159,6 @@ public abstract class RunnableOrchestration implements Runnable {
 				//check final state
 				if (currentState.isFinalstate() && (fs.isEmpty()||choice==stop_choice))
 				{
-
 					System.out.println("Orchestrator sending termination message");
 					for (ObjectOutputStream o : oout) {
 						o.flush();
@@ -201,4 +204,26 @@ public abstract class RunnableOrchestration implements Runnable {
 	 */
 	public abstract String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
 
+	public abstract String getChoiceType();
+
+	private void checkCompatibility() throws UnknownHostException, IOException, ClassNotFoundException {
+		for (int i=0;i<ports.size();i++) {
+			try (Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
+					ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+					ObjectInputStream ois = new ObjectInputStream(s.getInputStream());)
+			{
+				oos.writeObject(check_msg);
+				oos.writeObject(this.getChoiceType());
+				oos.writeObject(this.act.getActionType());
+
+				String msg = (String) ois.readObject();
+				if (!msg.equals(ack_msg)) {
+					throw new IllegalArgumentException("Uncompatible type with service at "+s+" "+msg);
+				}
+
+			}
+
+		}
+	}
+	
 }
