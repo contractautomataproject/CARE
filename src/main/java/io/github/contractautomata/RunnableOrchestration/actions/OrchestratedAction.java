@@ -6,7 +6,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import contractAutomata.automaton.transition.MSCATransition;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 
 public interface OrchestratedAction {

@@ -9,18 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import contractAutomata.automaton.Automaton;
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.label.Label;
-import contractAutomata.automaton.state.BasicState;
-import contractAutomata.automaton.state.CAState;
-import contractAutomata.automaton.state.State;
-import contractAutomata.automaton.transition.MSCATransition;
-import contractAutomata.automaton.transition.Transition;
-import contractAutomata.operators.CompositionFunction;
-import contractAutomata.operators.OrchestrationSynthesisOperator;
-import contractAutomata.requirements.StrongAgreement;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.davidebasile.contractautomata.automaton.Automaton;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.label.Label;
+import io.github.davidebasile.contractautomata.automaton.state.BasicState;
+import io.github.davidebasile.contractautomata.automaton.state.CAState;
+import io.github.davidebasile.contractautomata.automaton.state.State;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.davidebasile.contractautomata.automaton.transition.Transition;
+import io.github.davidebasile.contractautomata.operators.CompositionFunction;
+import io.github.davidebasile.contractautomata.operators.OrchestrationSynthesisOperator;
+import io.github.davidebasile.contractautomata.requirements.StrongAgreement;
 
 /**
  * Abstract class implementing the runtime environment of a contract automata orchestration.
@@ -40,34 +41,30 @@ public abstract class RunnableOrchestration implements Runnable {
 	private OrchestratorAction act;
 
 
-	public RunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
+	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
 			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super();
 
 		if (hosts.size()!=port.size())
 			throw new IllegalArgumentException();
 
-		MSCA comp=new CompositionFunction().apply(contracts,pred.negate(),100);
-
-		contract = new OrchestrationSynthesisOperator(pred,req).apply(comp); 
-
-		if (contract==null)
-			throw new IllegalArgumentException("No orchestration");
-
-		System.out.println("The orchestration is : " + contract.toString());
-
+		if (!contracts.stream()
+				.allMatch(c->c.getTransition().parallelStream()
+						.map(MSCATransition::getLabel)
+						.allMatch(l -> l instanceof TypedCALabel)))
+			throw new IllegalArgumentException("A contract has no typed label");
 
 		this.pred=pred;
 		this.addresses = hosts;
 		this.ports = port;
-		this.currentState = contract.getStates().parallelStream()
-				.filter(State::isInitial)
-				.findAny()
-				.orElseThrow(IllegalArgumentException::new);
 		this.act=act;
+
+		MSCA comp=new CompositionFunction(contracts).apply(pred.negate(),Integer.MAX_VALUE);
+		contract = new OrchestrationSynthesisOperator(pred,req).apply(comp); 
+
 	}
 
-	public RunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
+	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
 			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super();
 
@@ -78,22 +75,20 @@ public abstract class RunnableOrchestration implements Runnable {
 		this.contract = orchestration; 
 		this.addresses = hosts;
 		this.ports = port;
-		this.currentState = contract.getStates().parallelStream()
-				.filter(State::isInitial)
-				.findAny()
-				.orElseThrow(IllegalArgumentException::new);
 		this.act=act;
 	}
-	
+
 	public MSCA getContract() {
 		return contract;
+	}
+
+	public boolean isEmptyOrchestration() {
+		return contract==null;
 	}
 
 	public CAState getCurrentState() {
 		return currentState;
 	}
-	
-	
 
 	public List<Integer> getPorts() {
 		return ports;
@@ -105,6 +100,16 @@ public abstract class RunnableOrchestration implements Runnable {
 
 	@Override
 	public void run() {
+		if (this.isEmptyOrchestration())
+			throw new IllegalArgumentException("Empty orchestration");
+
+		System.out.println("The orchestration is : " + contract.toString());
+
+		this.currentState = contract.getStates().parallelStream()
+				.filter(State::isInitial)
+				.findAny()
+				.orElseThrow(IllegalArgumentException::new);
+
 		try (   AutoCloseableList<Socket> sockets = new AutoCloseableList<Socket>();
 				AutoCloseableList<ObjectOutputStream> oout = new AutoCloseableList<ObjectOutputStream>();
 				AutoCloseableList<ObjectInputStream> oin = new AutoCloseableList<ObjectInputStream>();)
@@ -175,7 +180,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				System.out.println("Orchestrator, selected transition is "+t.toString());
 
 				act.doAction(this, t, oout, oin);
-				
+
 				currentState = t.getTarget();
 			}
 
@@ -185,7 +190,7 @@ public abstract class RunnableOrchestration implements Runnable {
 			throw new RuntimeException();
 		}
 	}	
-	
+
 	/**
 	 * 
 	 * @param oout	output to the services
@@ -195,5 +200,5 @@ public abstract class RunnableOrchestration implements Runnable {
 	 * @throws ClassNotFoundException
 	 */
 	public abstract String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
-	
+
 }

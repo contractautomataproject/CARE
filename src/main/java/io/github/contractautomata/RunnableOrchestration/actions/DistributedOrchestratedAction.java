@@ -9,8 +9,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
 
 public class DistributedOrchestratedAction implements OrchestratedAction {
 

@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.state.CAState;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.state.CAState;
 
 public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrchestratedContract {
 	

@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
-import contractAutomata.automaton.Automaton;
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.label.Label;
-import contractAutomata.automaton.state.BasicState;
-import contractAutomata.automaton.transition.MSCATransition;
-import contractAutomata.automaton.transition.Transition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
+import io.github.davidebasile.contractautomata.automaton.Automaton;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.label.Label;
+import io.github.davidebasile.contractautomata.automaton.state.BasicState;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.davidebasile.contractautomata.automaton.transition.Transition;
 
 /**
  * Orchestration class resolving choices by assigning 
@@ -30,7 +30,7 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 
 	private final Random generator;
 
-	public DictatorialChoiceRunnableOrchestration(Automaton<String, BasicState,Transition<String, BasicState,Label>> req, 
+	public DictatorialChoiceRunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
 			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super(req, pred, contracts, hosts, port,act);
 		generator = new Random();

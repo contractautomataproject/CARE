@@ -11,15 +11,15 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import contractAutomata.automaton.Automaton;
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.label.Label;
-import contractAutomata.automaton.state.BasicState;
-import contractAutomata.automaton.transition.MSCATransition;
-import contractAutomata.automaton.transition.Transition;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
+import io.github.davidebasile.contractautomata.automaton.Automaton;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.label.Label;
+import io.github.davidebasile.contractautomata.automaton.state.BasicState;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.davidebasile.contractautomata.automaton.transition.Transition;
 
 /**
  * each choice is solved by asking the services, and selecting the (or one of the) 
@@ -31,7 +31,7 @@ import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorActi
 public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestration {
 	
 
-	public MajoritarianChoiceRunnableOrchestration(Automaton<String, BasicState, Transition<String, BasicState, Label>> req,
+	public MajoritarianChoiceRunnableOrchestration(Automaton<String, String, BasicState, Transition<String, String, BasicState, Label<String>>> req,
 			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) {
 		super(req, pred, contracts, hosts, port, act);
 	}

@@ -2,7 +2,8 @@ package io.github.contractautomata.RunnableChoreography;
 
 import java.util.List;
 
-import contractAutomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+
 
 /**
  * not currently implemented

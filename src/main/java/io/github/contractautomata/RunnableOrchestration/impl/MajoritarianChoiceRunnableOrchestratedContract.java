@@ -5,11 +5,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Random;
 
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.state.CAState;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.state.CAState;
 
 /**
  * The service when asked upon send its branch/termination choice, 

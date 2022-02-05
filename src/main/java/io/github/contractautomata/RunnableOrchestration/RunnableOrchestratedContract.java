@@ -6,13 +6,16 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.net.ServerSocketFactory;
 
-import contractAutomata.automaton.MSCA;
-import contractAutomata.automaton.state.CAState;
-import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.davidebasile.contractautomata.automaton.MSCA;
+import io.github.davidebasile.contractautomata.automaton.state.CAState;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
 
 /**
  * 
@@ -30,10 +33,22 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 
 	public RunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
 		super();
-		this.contract = contract;
 		this.port = port;
 		this.service=service;
 		this.act=act;
+
+		Method[] arrm = service.getClass().getMethods();
+
+		//change the labels to typed labels
+		this.contract = new MSCA(contract.getTransition().stream()
+				.map(t->{ Method met = Arrays.stream(arrm)
+				.filter(m->m.getName().equals(t.getLabel().getUnsignedAction()))
+				.findFirst().orElseThrow(IllegalArgumentException::new);
+				TypedCALabel tcl = new TypedCALabel(t.getLabel(),met.getParameterTypes()[0],met.getReturnType());
+				return new MSCATransition(t.getSource(),tcl,t.getTarget(),t.getModality());})
+					.collect(Collectors.toSet())
+				);
+
 	}
 
 
@@ -41,33 +56,33 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 		return port;
 	}
 
-	public MSCA getContract() {
-		return contract;
-	}
-
 	public Object getService() {
 		return service;
+	}
+
+	public MSCA getContract() {
+		return contract;
 	}
 	
 	@Override
 	public void run() {
 		try (ServerSocket servsock =  ServerSocketFactory.getDefault().createServerSocket(port);)
 		{
-		    while (true) {
-		    	new Thread() {
-		    		private Socket socket;
-		    		private CAState currentState;
-		    		{
-		    			socket = servsock.accept();
+			while (true) {
+				new Thread() {
+					private Socket socket;
+					private CAState currentState;
+					{
+						socket = servsock.accept();
 
-		    			currentState = contract.getStates().parallelStream()
-		    					.filter(CAState::isInitial)
-		    					.findAny()
-		    					.orElseThrow(IllegalArgumentException::new);
-		    		}
-		    		
-		    		@Override
-		    		public void run() {
+						currentState = contract.getStates().parallelStream()
+								.filter(CAState::isInitial)
+								.findAny()
+								.orElseThrow(IllegalArgumentException::new);
+					}
+
+					@Override
+					public void run() {
 						try    (ObjectInputStream oin = new ObjectInputStream(socket.getInputStream());
 								ObjectOutputStream oout = new ObjectOutputStream(socket.getOutputStream());)
 						{
@@ -123,9 +138,9 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 							throw new RuntimeException(e);
 						}
 
-		    		}
-		    	}.start();
-		    }
+					}
+				}.start();
+			}
 		} catch (IOException e2) {
 			RuntimeException re = new RuntimeException();
 			re.addSuppressed(e2);
@@ -139,4 +154,3 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 
 }
 
-	

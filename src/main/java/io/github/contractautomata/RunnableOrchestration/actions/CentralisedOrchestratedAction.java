@@ -6,8 +6,8 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import contractAutomata.automaton.transition.MSCATransition;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
+import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
 
 public class CentralisedOrchestratedAction implements OrchestratedAction {
 	
@@ -36,4 +36,5 @@ public class CentralisedOrchestratedAction implements OrchestratedAction {
 			m1.invoke(rc.getService(),c.cast(oin.readObject()));
 		}
 	}
+
 }
