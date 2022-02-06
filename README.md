@@ -21,15 +21,15 @@ Each <tt>RunnableOrchestratedContract</tt> is a wrapper responsible for pairing 
 This wrapper is listening for invocation commands from the orchestrator, and replies by invoking the corresponding method. In case the invocation is not allowed by the contract, a <tt>ContractViolationException</tt> is raised. This guarantees the adherence of the implementation to the specification.
 
 
-Both <tt>RunnableOrchestratedContract</tt> and   <tt>RunnableOrchestration</tt> abstracts from the way in which a choice is made, in the presence of branches or termination. 
+Both <tt>RunnableOrchestratedContract</tt> and   <tt>RunnableOrchestration</tt> abstract from the way in which a choice is made, in the presence of branches or termination. 
 This is abstracted by the method <tt>choice</tt>.  
-Currently two implementations are <tt>DictatorialChoice</tt> (the orchestrator choose alone) and <tt>MajoritarianChoice</tt> (services vote and the majority wins). 
+Currently two implementations are <tt>DictatorialChoice</tt> (the orchestrator chooses alone) and <tt>MajoritarianChoice</tt> (services vote and the majority wins). 
 The other aspect to concretize is the implementation of an action of a contract. 
 This is abstracted by the interfaces  <tt>OrchestratedAction</tt> and <tt>OrchestratorAction</tt>, to which, respectively,  <tt>RunnableOrchestratedContract</tt> and   <tt>RunnableOrchestration</tt> depends upon. 
 Currently, two implementations for the actions are <tt>CentralAction</tt> (the orchestrator acts as a proxy) and <tt>DistributedAction</tt> (the services involved in the action interacts with each other and the orchestrator).
-When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <tt>RunnableOrchestratedContract</tt> have a compatible configuration (in terms of choice and action implementation).
+When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <tt>RunnableOrchestratedContract</tt> have a compatible configuration (in terms of choice and action implementations).
 
-A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CAT_lib</tt> is used to add the type of the parameter and the returned value to each action. 
+A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CAT_Lib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
 ### Usage
