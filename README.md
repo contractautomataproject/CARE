@@ -15,8 +15,6 @@ This last one is a special service that reads the synthesised orchestration and 
 Each <tt>RunnableOrchestratedContract</tt> is a wrapper responsible for pairing the specification of a service (the contract) with its implementation.
 This wrapper is listening for invocation commands from the orchestrator, and replies by invoking the corresponding method. In case the invocation is not allowed by the contract, a <tt>ContractViolationException</tt> is raised. This guarantees the adherence of the implementation to the specification.
 
-The <tt>RunnableChoreography</tt> class is currently under development.
-
 
 ### Class Diagram
 
