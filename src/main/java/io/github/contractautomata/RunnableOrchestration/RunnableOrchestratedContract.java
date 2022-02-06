@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	private final int port;
 	private final Object service;
 	private final OrchestratedAction act;
+	private final int timeout=600000;//10 minutes
 
 	public RunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
 		super();
@@ -72,7 +74,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 					private CAState currentState;
 					{
 						socket = servsock.accept();
-
+						socket.setSoTimeout(timeout);
 						currentState = contract.getStates().parallelStream()
 								.filter(CAState::isInitial)
 								.findAny()
@@ -126,7 +128,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 										}
 									}
 								} catch(Exception e) {
-									ContractViolationException re = new ContractViolationException();
+									ContractViolationException re = new ContractViolationException(socket.getRemoteSocketAddress());
 									re.addSuppressed(e);
 									throw re;
 								}
@@ -135,11 +137,15 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 								currentState=t.getTarget();
 							}
 									
+						} catch (SocketTimeoutException e) {
+							ContractViolationException re = new ContractViolationException(socket.getRemoteSocketAddress());
+							re.addSuppressed(e);
+							throw new RuntimeException(e);
 						} catch (Exception e) {
 							RuntimeException re = new RuntimeException();
 							re.addSuppressed(e);
 							throw new RuntimeException(e);
-						}
+						} 
 
 						System.out.println("Session terminated at host " + socket.getLocalAddress().toString() 
 								+ ", port "+socket.getLocalPort()); 

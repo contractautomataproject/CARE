@@ -1,6 +1,22 @@
 package io.github.contractautomata.RunnableOrchestration;
 
+import java.net.SocketAddress;
+
 public class ContractViolationException extends RuntimeException {
+
+	//remote host causing the violation of the contract, for accountability
+	private final SocketAddress remote;
+
+	
+	public ContractViolationException(SocketAddress remote) {
+		super();
+		this.remote = remote;
+	}
+
+
+	public SocketAddress getRemote() {
+		return remote;
+	}
 
 	/**
 	 * 
