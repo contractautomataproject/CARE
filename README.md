@@ -29,7 +29,7 @@ This is abstracted by the interfaces  <tt>OrchestratedAction</tt> and <tt>Orches
 Currently, two implementations for the actions are <tt>CentralAction</tt> (the orchestrator acts as a proxy) and <tt>DistributedAction</tt> (the services involved in the action interacts with each other and the orchestrator).
 When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <tt>RunnableOrchestratedContract</tt> have a compatible configuration (in terms of choice and action implementations).
 
-A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CAT_Lib</tt> is used to add the type of the parameter and the returned value to each action. 
+A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CATLib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
 ### Usage
