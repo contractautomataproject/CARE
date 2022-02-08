@@ -24,6 +24,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/CAT_Lib"/>
+	<classpathentry kind="lib" path="lib/CAT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
