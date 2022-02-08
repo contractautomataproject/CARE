@@ -18,7 +18,7 @@ This is the class diagram of CARE (click on the image to enlarge).
 Two main elements of <tt>CARE</tt> are the abstract classes  <tt>RunnableOrchestratedContract</tt> and   <tt>RunnableOrchestration</tt>. 
 This last one is a special service that reads the synthesised orchestration and orchestrates the  <tt>RunnableOrchestratedContract</tt> to realise the overall application. 
 Each <tt>RunnableOrchestratedContract</tt> is a wrapper responsible for pairing the specification of a service (the contract) with its implementation.
-This wrapper is listening for invocation commands from the orchestrator, and replies by invoking the corresponding method. In case the invocation is not allowed by the contract, a <tt>ContractViolationException</tt> is raised. This guarantees the adherence of the implementation to the specification.
+This wrapper is listening for invocation commands from the orchestrator, and replies by invoking the corresponding method. In case the invocation is not allowed by the contract, or in case an interaction terminates prior to the fulfilment of the contract, a <tt>ContractViolationException</tt> is raised registering the remote host violating the contract. This guarantees the adherence of the implementation to the specification and allows for accountability.
 
 
 Both <tt>RunnableOrchestratedContract</tt> and   <tt>RunnableOrchestration</tt> abstract from the way in which a choice is made, in the presence of branches or termination. 
@@ -29,7 +29,7 @@ This is abstracted by the interfaces  <tt>OrchestratedAction</tt> and <tt>Orches
 Currently, two implementations for the actions are <tt>CentralAction</tt> (the orchestrator acts as a proxy) and <tt>DistributedAction</tt> (the services involved in the action interacts with each other and the orchestrator).
 When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <tt>RunnableOrchestratedContract</tt> have a compatible configuration (in terms of choice and action implementations).
 
-A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CAT_Lib</tt> is used to add the type of the parameter and the returned value to each action. 
+A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CATLib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
 ### Usage
