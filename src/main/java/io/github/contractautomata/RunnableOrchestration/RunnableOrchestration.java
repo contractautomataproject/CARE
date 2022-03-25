@@ -1,15 +1,5 @@
 package io.github.contractautomata.RunnableOrchestration;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
 import io.github.contractautomata.label.TypedCALabel;
 import io.github.contractautomataproject.catlib.automaton.Automaton;
@@ -24,6 +14,17 @@ import io.github.contractautomataproject.catlib.operators.MSCACompositionFunctio
 import io.github.contractautomataproject.catlib.operators.OrchestrationSynthesisOperator;
 import io.github.contractautomataproject.catlib.requirements.StrongAgreement;
 import io.github.contractautomataproject.catlib.requirements.StrongAgreementModelChecking;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class implementing the runtime environment of a contract automata orchestration.
@@ -40,16 +41,16 @@ public abstract class RunnableOrchestration implements Runnable {
 
 	private final List<Integer> ports;
 	private final List<String> addresses;
-	private final Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> contract;
+	private final Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> contract;
 	private final Predicate<CALabel> pred;
 	private State<String> currentState;
-	private OrchestratorAction act;
+	private final OrchestratorAction act;
 
 
-	public RunnableOrchestration(Automaton<String, Action, State<String>, Transition<String, Action, State<String>, Label<Action>>> req,
+	public RunnableOrchestration(Automaton<String, Action, State<String>, ModalTransition<String, Action, State<String>, Label<Action>>> req,
 								 Predicate<CALabel> pred,
-								 List<Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>>> contracts,
-								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+								 List<Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, TypedCALabel>>> contracts,
+								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws  ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -67,15 +68,29 @@ public abstract class RunnableOrchestration implements Runnable {
 		this.act=act;
 		checkCompatibility();
 
-		Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> comp
-				=new MSCACompositionFunction(contracts,pred.negate()).apply(Integer.MAX_VALUE);
-		contract = new OrchestrationSynthesisOperator(pred,new StrongAgreementModelChecking<>().negate(),req).apply(comp);
+		CompositionFunction<String,State<String>,TypedCALabel,ModalTransition<String,Action,State<String>,TypedCALabel>,
+				Automaton<String,Action,State<String>,ModalTransition<String,Action,State<String>,TypedCALabel>>> cf =
+				new CompositionFunction<String,State<String>,TypedCALabel,ModalTransition<String,Action,State<String>,TypedCALabel>,
+						Automaton<String,Action,State<String>,ModalTransition<String,Action,State<String>,TypedCALabel>>>
+						(contracts, (TypedCALabel l1,TypedCALabel l2)-> l1.match(l2),State::new,ModalTransition::new,TypedCALabel::new,Automaton::new,
+								l->pred.negate().test((CALabel) l));
+
+		//conver to CALabel to use the synthesis
+		Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> comp
+				= new Automaton<>(cf.apply(Integer.MAX_VALUE)
+				.getTransition().parallelStream()
+				.map(t->new ModalTransition<>(t.getSource(),new CALabel(t.getLabel().getLabel()),t.getTarget(),t.getModality()))
+				.collect(Collectors.toSet()));
+
+
+		contract = new OrchestrationSynthesisOperator<String>(pred,new StrongAgreementModelChecking<>().negate(),req)
+				.apply(comp);
 
 	}
 
 	public RunnableOrchestration(Automaton<String, String, State<String>,Transition<String, String, State<String>,Label<String>>> req,
-			Predicate<CALabel> pred, Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> orchestration,
-								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+			Predicate<CALabel> pred, Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> orchestration,
+								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -89,7 +104,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		checkCompatibility();
 	}
 
-	public Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> getContract() {
+	public Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> getContract() {
 		return contract;
 	}
 
@@ -121,9 +136,9 @@ public abstract class RunnableOrchestration implements Runnable {
 				.findAny()
 				.orElseThrow(IllegalArgumentException::new);
 
-		try (   AutoCloseableList<Socket> sockets = new AutoCloseableList<Socket>();
-				AutoCloseableList<ObjectOutputStream> oout = new AutoCloseableList<ObjectOutputStream>();
-				AutoCloseableList<ObjectInputStream> oin = new AutoCloseableList<ObjectInputStream>();)
+		try (   AutoCloseableList<Socket> sockets = new AutoCloseableList<>();
+				AutoCloseableList<ObjectOutputStream> oout = new AutoCloseableList<>();
+				AutoCloseableList<ObjectInputStream> oin = new AutoCloseableList<>())
 		{
 			for (int i=0;i<ports.size();i++) {
 				Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
@@ -138,7 +153,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				System.out.println("Orchestrator, current state is "+currentState.toString());
 
 				//get forward state of the state
-				List<ModalTransition<String,Action,State<String>,TypedCALabel>> fs = new ArrayList<>(contract.getForwardStar(currentState));
+				List<ModalTransition<String,Action,State<String>,CALabel>> fs = new ArrayList<>(contract.getForwardStar(currentState));
 
 				//check absence of deadlocks
 				if (fs.isEmpty()&&!currentState.isFinalState())
@@ -162,7 +177,7 @@ public abstract class RunnableOrchestration implements Runnable {
 					choice="";//for initialization
 
 				//check final state
-				if (currentState.isFinalState() && (fs.isEmpty()||choice==stop_choice))
+				if (currentState.isFinalState() && (fs.isEmpty()||choice.equals(stop_choice)))
 				{
 					System.out.println("Orchestrator sending termination message");
 					for (ObjectOutputStream o : oout) {
@@ -173,7 +188,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				}
 
 				//select a transition to fire
-				ModalTransition<String,Action,State<String>,TypedCALabel> t = fs.stream()
+				ModalTransition<String,Action,State<String>,CALabel> t = fs.stream()
 						.filter(tr->tr.getLabel().getAction().getLabel().equals(choice))
 						.findAny()
 						.orElseThrow(RuntimeException::new);
@@ -185,7 +200,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				if (t.getLabel().isOffer()&&(pred instanceof StrongAgreement))
 					throw new RuntimeException("The orchestration has unmatched offers!");
 
-				System.out.println("Orchestrator, selected transition is "+t.toString());
+				System.out.println("Orchestrator, selected transition is "+t);
 
 				act.doAction(this, t, oout, oin);
 
@@ -204,18 +219,16 @@ public abstract class RunnableOrchestration implements Runnable {
 	 * @param oout	output to the services
 	 * @param oin	input from the services
 	 * @return	the selected action to fire
-	 * @throws IOException
-	 * @throws ClassNotFoundException
 	 */
 	public abstract String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException;
 
 	public abstract String getChoiceType();
 
-	private void checkCompatibility() throws UnknownHostException, IOException, ClassNotFoundException {
+	private void checkCompatibility() throws IOException, ClassNotFoundException {
 		for (int i=0;i<ports.size();i++) {
 			try (Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
 					ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-					ObjectInputStream ois = new ObjectInputStream(s.getInputStream());)
+					ObjectInputStream ois = new ObjectInputStream(s.getInputStream()))
 			{
 				oos.writeObject(check_msg);
 				oos.writeObject(this.getChoiceType());

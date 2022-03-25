@@ -4,6 +4,8 @@ import io.github.contractautomataproject.catlib.automaton.label.CALabel;
 import io.github.contractautomataproject.catlib.automaton.label.Label;
 import io.github.contractautomataproject.catlib.automaton.label.action.Action;
 
+import java.util.List;
+
 /**
  * a CALabel annotated with parameter type and return value type for matching types
  * 
@@ -19,8 +21,12 @@ public class TypedCALabel extends CALabel{
 		this.param=param;
 		this.value=value;
 	}
-	
 
+	public TypedCALabel(List<Action> la) {
+		super(la);
+		this.param=null;
+		this.value=null;
+	}
 	@Override
 	public boolean match(Label<Action> label) {
 		if (label instanceof TypedCALabel)

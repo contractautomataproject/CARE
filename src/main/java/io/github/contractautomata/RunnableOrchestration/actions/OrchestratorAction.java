@@ -23,7 +23,7 @@ public interface OrchestratorAction {
 	 * @throws ClassNotFoundException
 	 * 
 	 */
-	public void doAction(RunnableOrchestration ro, ModalTransition<String, Action, State<String>, TypedCALabel> t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException ;
+	public void doAction(RunnableOrchestration ro, ModalTransition<String, Action, State<String>, ? extends CALabel> t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException ;
 	
 	public String getActionType();
 }
