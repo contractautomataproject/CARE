@@ -8,9 +8,12 @@ import java.util.Random;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
-import io.github.davidebasile.contractautomata.automaton.MSCA;
-import io.github.davidebasile.contractautomata.automaton.state.CAState;
-
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.contractautomataproject.catlib.automaton.Automaton;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
 /**
  * The service when asked upon send its branch/termination choice, 
  * by assigning  a uniform distribution and picking one, with 
@@ -23,13 +26,14 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 
 	private final Random generator;
 
-	public MajoritarianChoiceRunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
+	public MajoritarianChoiceRunnableOrchestratedContract(Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>> contract,
+														  int port, Object service, OrchestratedAction act) throws IOException {
 		super(contract, port, service, act);
 		generator = new Random();
 	}
 
 	@Override
-	public void choice(CAState currentState, ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
+	public void choice(State<String> currentState, ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
 
 		//receive message from orchestrator on whether to choose or skip
 		String action = (String) oin.readObject();
@@ -56,8 +60,8 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	 * @param toChoose  the list of possible choices
 	 * @return the choice made to be communicated to the orchestrator
 	 */
-	public String select(CAState currentState, String[] toChoose) {
-		if (currentState.isFinalstate()&&generator.nextInt(2)==0) //50% chance of terminating
+	public String select(State<String> currentState, String[] toChoose) {
+		if (currentState.isFinalState()&&generator.nextInt(2)==0) //50% chance of terminating
 			return RunnableOrchestration.stop_choice; 
 		else		
 			return toChoose[generator.nextInt(toChoose.length)];

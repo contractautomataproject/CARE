@@ -12,12 +12,14 @@ import java.util.function.Predicate;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
-import io.github.davidebasile.contractautomata.automaton.Automaton;
-import io.github.davidebasile.contractautomata.automaton.MSCA;
-import io.github.davidebasile.contractautomata.automaton.label.Label;
-import io.github.davidebasile.contractautomata.automaton.state.BasicState;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
-import io.github.davidebasile.contractautomata.automaton.transition.Transition;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.contractautomataproject.catlib.automaton.Automaton;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.Label;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
+import io.github.contractautomataproject.catlib.automaton.transition.Transition;
 
 /**
  * Orchestration class resolving choices by assigning 
@@ -31,8 +33,10 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 
 	private final Random generator;
 
-	public DictatorialChoiceRunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+	public DictatorialChoiceRunnableOrchestration(Automaton<String, Action, State<String>, Transition<String, Action, State<String>, Label<Action>>> req,
+												  Predicate<CALabel> pred,
+												  List<Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>>> contracts,
+												  List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super(req, pred, contracts, hosts, port,act);
 		generator = new Random();
 	}
@@ -50,9 +54,9 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 	 */
 	public String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 		
-		List<MSCATransition> fs = new ArrayList<>(this.getContract().getForwardStar(this.getCurrentState()));
+		List<ModalTransition<String,Action,State<String>, TypedCALabel>> fs = new ArrayList<>(this.getContract().getForwardStar(this.getCurrentState()));
 		
-		if (this.getCurrentState().isFinalstate())
+		if (this.getCurrentState().isFinalState())
 		{
 			int n=generator.nextInt(2);
 			if (n==0||fs.size()==0)
@@ -60,7 +64,7 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 		}
 		
 		int n= generator.nextInt(fs.size());
-		return fs.get(n).getLabel().getUnsignedAction();
+		return fs.get(n).getLabel().getAction().getLabel();
 
 	}
 	

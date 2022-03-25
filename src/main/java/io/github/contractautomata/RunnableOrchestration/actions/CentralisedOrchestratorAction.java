@@ -6,7 +6,11 @@ import java.io.ObjectOutputStream;
 
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
 
 public class CentralisedOrchestratorAction  implements OrchestratorAction {
 
@@ -27,12 +31,12 @@ public class CentralisedOrchestratorAction  implements OrchestratorAction {
 	 * @throws ClassNotFoundException
 	 * 
 	 */
-	public void doAction(RunnableOrchestration ro, MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+	public void doAction(RunnableOrchestration ro, ModalTransition<String, Action, State<String>, TypedCALabel> t, AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 
 		if (t.getLabel().isMatch())
 		{
 			// match: firstly interact with the requester
-			oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
+			oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getAction().getLabel());
 			oout.get(t.getLabel().getRequester()).flush();
 			oout.get(t.getLabel().getRequester()).writeObject(null);
 			oout.get(t.getLabel().getRequester()).flush();
@@ -40,7 +44,7 @@ public class CentralisedOrchestratorAction  implements OrchestratorAction {
 			Object rep_req = oin.get(t.getLabel().getRequester()).readObject();
 
 			//forwarding the received requester payload to the offerer
-			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getAction().getLabel());
 			oout.get(t.getLabel().getOfferer()).flush();
 			oout.get(t.getLabel().getOfferer()).writeObject(rep_req);
 			oout.get(t.getLabel().getOfferer()).flush();
@@ -54,7 +58,7 @@ public class CentralisedOrchestratorAction  implements OrchestratorAction {
 		else 
 			if (t.getLabel().isOffer()){
 			//only invokes the offerer and then continue
-			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+			oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getAction().getLabel());
 			oout.get(t.getLabel().getOfferer()).flush();
 			oout.get(t.getLabel().getOfferer()).writeObject(null);
 			oout.get(t.getLabel().getOfferer()).flush();

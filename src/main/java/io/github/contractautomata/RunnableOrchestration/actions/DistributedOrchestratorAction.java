@@ -6,7 +6,11 @@ import java.io.ObjectOutputStream;
 
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
 
 public class DistributedOrchestratorAction  implements OrchestratorAction {
 	
@@ -26,17 +30,17 @@ public class DistributedOrchestratorAction  implements OrchestratorAction {
 	 * @throws ClassNotFoundException
 	 * 
 	 */
-	public void doAction(RunnableOrchestration ro, MSCATransition t, AutoCloseableList<ObjectOutputStream> oout, 
-			AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
+	public void doAction(RunnableOrchestration ro, ModalTransition<String, Action, State<String>, TypedCALabel> t, AutoCloseableList<ObjectOutputStream> oout,
+						 AutoCloseableList<ObjectInputStream> oin) throws IOException, ClassNotFoundException {
 
 		//send action to the offerer
-		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getUnsignedAction());
+		oout.get(t.getLabel().getOfferer()).writeObject(t.getLabel().getAction().getLabel());
 		oout.get(t.getLabel().getOfferer()).flush();
 
 		if (t.getLabel().isMatch())
 		{
 			//send action to requester
-			oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getUnsignedAction());
+			oout.get(t.getLabel().getRequester()).writeObject(t.getLabel().getAction().getLabel());
 			oout.get(t.getLabel().getRequester()).flush();
 			
 			//send type to the offerer

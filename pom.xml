@@ -3,15 +3,31 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>io.github.davidebasile</groupId>
-	<artifactId>SimpleSocketExample</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<name>CARE</name>
+	<groupId>io.github.contractautomataproject</groupId>
+	<artifactId>CARE</artifactId>
+	<url>https://github.com/ContractAutomataProject/CARE</url>
 
-	<name>SimpleSocketExample</name>
-	<url>http://maven.apache.org</url>
+	<licenses>
+		<license>
+			<name>>GNU General Public License v3.0</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.rdf</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Davide Basile</name>
+			<email>davide.basile@isti.cnr.it</email>
+			<organization>ISTI CNR</organization>
+			<organizationUrl>https://www.isti.cnr.it/</organizationUrl>
+		</developer>
+	</developers>
+
 
 	<properties>
+		<maven.compiler.source>1.9</maven.compiler.source>
+		<maven.compiler.target>1.9</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -19,7 +35,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>LATEST</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

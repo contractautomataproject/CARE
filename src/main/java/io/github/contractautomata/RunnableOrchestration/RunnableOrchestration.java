@@ -12,17 +12,18 @@ import java.util.function.Predicate;
 
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
 import io.github.contractautomata.label.TypedCALabel;
-import io.github.davidebasile.contractautomata.automaton.Automaton;
-import io.github.davidebasile.contractautomata.automaton.MSCA;
-import io.github.davidebasile.contractautomata.automaton.label.Label;
-import io.github.davidebasile.contractautomata.automaton.state.BasicState;
-import io.github.davidebasile.contractautomata.automaton.state.CAState;
-import io.github.davidebasile.contractautomata.automaton.state.State;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
-import io.github.davidebasile.contractautomata.automaton.transition.Transition;
-import io.github.davidebasile.contractautomata.operators.CompositionFunction;
-import io.github.davidebasile.contractautomata.operators.OrchestrationSynthesisOperator;
-import io.github.davidebasile.contractautomata.requirements.StrongAgreement;
+import io.github.contractautomataproject.catlib.automaton.Automaton;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.Label;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
+import io.github.contractautomataproject.catlib.automaton.transition.Transition;
+import io.github.contractautomataproject.catlib.operators.CompositionFunction;
+import io.github.contractautomataproject.catlib.operators.MSCACompositionFunction;
+import io.github.contractautomataproject.catlib.operators.OrchestrationSynthesisOperator;
+import io.github.contractautomataproject.catlib.requirements.StrongAgreement;
+import io.github.contractautomataproject.catlib.requirements.StrongAgreementModelChecking;
 
 /**
  * Abstract class implementing the runtime environment of a contract automata orchestration.
@@ -39,14 +40,16 @@ public abstract class RunnableOrchestration implements Runnable {
 
 	private final List<Integer> ports;
 	private final List<String> addresses;
-	private final MSCA contract;
-	private final Predicate<MSCATransition> pred;
-	private CAState currentState;
+	private final Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> contract;
+	private final Predicate<CALabel> pred;
+	private State<String> currentState;
 	private OrchestratorAction act;
 
 
-	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+	public RunnableOrchestration(Automaton<String, Action, State<String>, Transition<String, Action, State<String>, Label<Action>>> req,
+								 Predicate<CALabel> pred,
+								 List<Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>>> contracts,
+								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -54,7 +57,7 @@ public abstract class RunnableOrchestration implements Runnable {
 
 		if (!contracts.stream()
 				.allMatch(c->c.getTransition().parallelStream()
-						.map(MSCATransition::getLabel)
+						.map(ModalTransition::getLabel)
 						.allMatch(l -> l instanceof TypedCALabel)))
 			throw new IllegalArgumentException("A contract has no typed label");
 
@@ -64,13 +67,15 @@ public abstract class RunnableOrchestration implements Runnable {
 		this.act=act;
 		checkCompatibility();
 
-		MSCA comp=new CompositionFunction(contracts).apply(pred.negate(),Integer.MAX_VALUE);
-		contract = new OrchestrationSynthesisOperator(pred,req).apply(comp); 
+		Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> comp
+				=new MSCACompositionFunction(contracts,pred.negate()).apply(Integer.MAX_VALUE);
+		contract = new OrchestrationSynthesisOperator(pred,new StrongAgreementModelChecking<>().negate(),req).apply(comp);
 
 	}
 
-	public RunnableOrchestration(Automaton<String, String, BasicState,Transition<String, String, BasicState,Label<String>>> req, 
-			Predicate<MSCATransition> pred, MSCA orchestration, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+	public RunnableOrchestration(Automaton<String, String, State<String>,Transition<String, String, State<String>,Label<String>>> req,
+			Predicate<CALabel> pred, Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> orchestration,
+								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super();
 
 		if (hosts.size()!=port.size())
@@ -84,7 +89,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		checkCompatibility();
 	}
 
-	public MSCA getContract() {
+	public Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> getContract() {
 		return contract;
 	}
 
@@ -92,7 +97,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		return contract==null;
 	}
 
-	public CAState getCurrentState() {
+	public State<String> getCurrentState() {
 		return currentState;
 	}
 
@@ -133,16 +138,16 @@ public abstract class RunnableOrchestration implements Runnable {
 				System.out.println("Orchestrator, current state is "+currentState.toString());
 
 				//get forward state of the state
-				List<MSCATransition> fs = new ArrayList<>(contract.getForwardStar(currentState));
+				List<ModalTransition<String,Action,State<String>,TypedCALabel>> fs = new ArrayList<>(contract.getForwardStar(currentState));
 
 				//check absence of deadlocks
-				if (fs.isEmpty()&&!currentState.isFinalstate()) 
+				if (fs.isEmpty()&&!currentState.isFinalState())
 					throw new RuntimeException("Deadlocked Orchestration!");
 
 
 				//the choice on the transition to fire or to terminate is made beforehand
 				final String choice;
-				if (fs.size()>1 || (currentState.isFinalstate() && fs.size()==1))
+				if (fs.size()>1 || (currentState.isFinalState() && fs.size()==1))
 				{
 					System.out.println("Orchestrator sending choice message");
 					for (ObjectOutputStream o : oout) {
@@ -152,12 +157,12 @@ public abstract class RunnableOrchestration implements Runnable {
 					choice = choice(oout,oin);
 				}
 				else if (fs.size()==1)
-					choice = fs.get(0).getLabel().getUnsignedAction();
+					choice = fs.get(0).getLabel().getAction().getLabel();
 				else
 					choice="";//for initialization
 
 				//check final state
-				if (currentState.isFinalstate() && (fs.isEmpty()||choice==stop_choice))
+				if (currentState.isFinalState() && (fs.isEmpty()||choice==stop_choice))
 				{
 					System.out.println("Orchestrator sending termination message");
 					for (ObjectOutputStream o : oout) {
@@ -168,8 +173,8 @@ public abstract class RunnableOrchestration implements Runnable {
 				}
 
 				//select a transition to fire
-				MSCATransition t = fs.stream()
-						.filter(tr->tr.getLabel().getUnsignedAction().equals(choice))
+				ModalTransition<String,Action,State<String>,TypedCALabel> t = fs.stream()
+						.filter(tr->tr.getLabel().getAction().getLabel().equals(choice))
 						.findAny()
 						.orElseThrow(RuntimeException::new);
 

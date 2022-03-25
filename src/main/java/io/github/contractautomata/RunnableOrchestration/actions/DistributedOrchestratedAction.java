@@ -10,13 +10,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestratedContract;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.contractautomata.label.TypedCALabel;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
 
 public class DistributedOrchestratedAction implements OrchestratedAction {
 
 	/**
-	 * 
-	 * @param service	the class implementing the contract
+	 *
 	 * @param m1		the method of service to call
 	 * @param oin		input from the orchestrator
 	 * @param oout		output to the orchestrator
@@ -28,7 +31,7 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 	 * @throws IOException
 	 * @throws  
 	 */
-	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, MSCATransition t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
+	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
 
 		Class<?> c=m1.getParameterTypes()[0];
 

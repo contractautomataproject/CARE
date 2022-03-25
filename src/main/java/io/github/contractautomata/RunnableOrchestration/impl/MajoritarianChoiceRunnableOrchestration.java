@@ -15,12 +15,13 @@ import java.util.stream.Stream;
 import io.github.contractautomata.RunnableOrchestration.AutoCloseableList;
 import io.github.contractautomata.RunnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratorAction;
-import io.github.davidebasile.contractautomata.automaton.Automaton;
-import io.github.davidebasile.contractautomata.automaton.MSCA;
-import io.github.davidebasile.contractautomata.automaton.label.Label;
-import io.github.davidebasile.contractautomata.automaton.state.BasicState;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
-import io.github.davidebasile.contractautomata.automaton.transition.Transition;
+import io.github.contractautomataproject.catlib.automaton.Automaton;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.Label;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
+import io.github.contractautomataproject.catlib.automaton.transition.Transition;
 
 /**
  * each choice is solved by asking the services, and selecting the (or one of the) 
@@ -32,8 +33,10 @@ import io.github.davidebasile.contractautomata.automaton.transition.Transition;
 public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestration {
 	
 
-	public MajoritarianChoiceRunnableOrchestration(Automaton<String, String, BasicState, Transition<String, String, BasicState, Label<String>>> req,
-			Predicate<MSCATransition> pred, List<MSCA> contracts, List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+	public MajoritarianChoiceRunnableOrchestration(Automaton<String, Action, State<String>, Transition<String, Action, State<String>, Label<Action>>> req,
+												   Predicate<CALabel> pred,
+												   List<Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>>> contracts,
+												   List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
 		super(req, pred, contracts, hosts, port, act);
 	}
 
@@ -58,7 +61,7 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		//computing and sending the possible choices
 		String[] toChoose = this.getContract()
 				.getForwardStar(this.getCurrentState()).stream()
-				.map(t->t.getLabel().getUnsignedAction())
+				.map(t->t.getLabel().getAction().getLabel())
 				.toArray(String[]::new);
 		for (Integer i : toInvoke) {
 			oout.get(i).writeObject(toChoose);

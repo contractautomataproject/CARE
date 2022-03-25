@@ -14,9 +14,11 @@ import javax.net.ServerSocketFactory;
 
 import io.github.contractautomata.RunnableOrchestration.actions.OrchestratedAction;
 import io.github.contractautomata.label.TypedCALabel;
-import io.github.davidebasile.contractautomata.automaton.MSCA;
-import io.github.davidebasile.contractautomata.automaton.state.CAState;
-import io.github.davidebasile.contractautomata.automaton.transition.MSCATransition;
+import io.github.contractautomataproject.catlib.automaton.Automaton;
+import io.github.contractautomataproject.catlib.automaton.label.CALabel;
+import io.github.contractautomataproject.catlib.automaton.label.action.Action;
+import io.github.contractautomataproject.catlib.automaton.state.State;
+import io.github.contractautomataproject.catlib.automaton.transition.ModalTransition;
 
 /**
  * 
@@ -27,13 +29,14 @@ import io.github.davidebasile.contractautomata.automaton.transition.MSCATransiti
  */
 public abstract class RunnableOrchestratedContract implements Runnable {
 
-	private final MSCA contract;
+	private final Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> contract;
 	private final int port;
 	private final Object service;
 	private final OrchestratedAction act;
 	private final int timeout=600000;//10 minutes
 
-	public RunnableOrchestratedContract(MSCA contract, int port, Object service, OrchestratedAction act) throws IOException {
+	public RunnableOrchestratedContract(Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> contract,
+										int port, Object service, OrchestratedAction act) throws IOException {
 		super();
 		this.port = port;
 		this.service=service;
@@ -42,12 +45,13 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 		Method[] arrm = service.getClass().getMethods();
 
 		//change the labels to typed labels
-		this.contract = new MSCA(contract.getTransition().stream()
+		this.contract = new Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>>
+				(contract.getTransition().stream()
 				.map(t->{ Method met = Arrays.stream(arrm)
-				.filter(m->m.getName().equals(t.getLabel().getUnsignedAction()))
+				.filter(m->m.getName().equals(t.getLabel().getAction().getLabel()))
 				.findFirst().orElseThrow(IllegalArgumentException::new);
 				TypedCALabel tcl = new TypedCALabel(t.getLabel(),met.getParameterTypes()[0],met.getReturnType());
-				return new MSCATransition(t.getSource(),tcl,t.getTarget(),t.getModality());})
+				return new ModalTransition<>(t.getSource(),tcl,t.getTarget(),t.getModality());})
 					.collect(Collectors.toSet()));
 	}
 
@@ -60,7 +64,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 		return service;
 	}
 
-	public MSCA getContract() {
+	public Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,TypedCALabel>> getContract() {
 		return contract;
 	}
 	
@@ -71,12 +75,12 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 			while (true) {
 				new Thread() {
 					private Socket socket;
-					private CAState currentState;
+					private io.github.contractautomataproject.catlib.automaton.state.State<String> currentState;
 					{
 						socket = servsock.accept();
 						socket.setSoTimeout(timeout);
 						currentState = contract.getStates().parallelStream()
-								.filter(CAState::isInitial)
+								.filter(io.github.contractautomataproject.catlib.automaton.state.State::isInitial)
 								.findAny()
 								.orElseThrow(IllegalArgumentException::new);
 					}
@@ -100,7 +104,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 								}
 								if (action.equals(RunnableOrchestration.stop_msg))
 								{
-									if (currentState.isFinalstate())
+									if (currentState.isFinalState())
 										break;
 									else
 										throw new RuntimeException("Not in a final state!");
@@ -113,9 +117,10 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 								}
 
 								//find a transition to fire
-								MSCATransition t = contract.getForwardStar(currentState)
+								ModalTransition<String,Action, io.github.contractautomataproject.catlib.automaton.state.State<String>,TypedCALabel> t =
+										contract.getForwardStar(currentState)
 										.stream()
-										.filter(tr->tr.getLabel().getUnsignedAction().equals(action))
+										.filter(tr->tr.getLabel().getAction().getLabel().equals(action))
 										.findAny()
 										.orElseThrow(UnsupportedOperationException::new);
 
@@ -160,7 +165,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	}
 
 
-	public abstract void choice(CAState currentState,ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
+	public abstract void choice(State<String> currentState,ObjectOutputStream oout, ObjectInputStream oin) throws Exception;
 
 	public abstract String getChoiceType();
 	
