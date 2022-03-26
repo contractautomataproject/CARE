@@ -4,9 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>CARE</name>
-	<groupId>io.github.contractautomataproject</groupId>
+	<groupId>io.github.contractautomata</groupId>
 	<artifactId>CARE</artifactId>
 	<url>https://github.com/ContractAutomataProject/CARE</url>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
 	<licenses>
 		<license>
@@ -33,10 +35,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>LATEST</version>
-			<scope>test</scope>
+			<groupId>io.github.contractautomata</groupId>
+			<artifactId>catlib</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 </project>
