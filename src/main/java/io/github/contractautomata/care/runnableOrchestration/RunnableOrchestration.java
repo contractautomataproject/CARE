@@ -11,7 +11,6 @@ import io.github.contractautomata.catlib.automaton.transition.ModalTransition;
 import io.github.contractautomata.catlib.operators.CompositionFunction;
 import io.github.contractautomata.catlib.operators.OrchestrationSynthesisOperator;
 import io.github.contractautomata.catlib.requirements.StrongAgreement;
-import io.github.contractautomata.catlib.requirements.StrongAgreementModelChecking;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -75,11 +74,10 @@ public abstract class RunnableOrchestration implements Runnable {
 		Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> comp
 				= new Automaton<>(cf.apply(Integer.MAX_VALUE)
 				.getTransition().parallelStream()
-				.map(t->new ModalTransition<>(t.getSource(),new CALabel(t.getLabel().getLabel()),t.getTarget(),t.getModality()))
+				.map(t->new ModalTransition<>(t.getSource(),(CALabel)t.getLabel(),t.getTarget(),t.getModality()))
 				.collect(Collectors.toSet()));
 
-
-		contract = new OrchestrationSynthesisOperator<>(pred,new StrongAgreementModelChecking<>().negate(),req)
+		contract = new OrchestrationSynthesisOperator<>(pred,req)
 				.apply(comp);
 
 	}
