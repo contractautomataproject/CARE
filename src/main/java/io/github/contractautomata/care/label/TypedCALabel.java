@@ -17,7 +17,7 @@ public class TypedCALabel extends CALabel{
 	private final Class<?> value;
 
 	public TypedCALabel(CALabel label, Class<?> param, Class<?> value) {
-		super(label.getLabel());
+		super(label.getContent());
 		this.param=param;
 		this.value=value;
 	}
