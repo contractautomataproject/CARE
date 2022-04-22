@@ -8,8 +8,8 @@ import io.github.contractautomata.catlib.automaton.label.Label;
 import io.github.contractautomata.catlib.automaton.label.action.Action;
 import io.github.contractautomata.catlib.automaton.state.State;
 import io.github.contractautomata.catlib.automaton.transition.ModalTransition;
-import io.github.contractautomata.catlib.operators.CompositionFunction;
-import io.github.contractautomata.catlib.operators.OrchestrationSynthesisOperator;
+import io.github.contractautomata.catlib.operations.CompositionFunction;
+import io.github.contractautomata.catlib.operations.OrchestrationSynthesisOperator;
 import io.github.contractautomata.catlib.requirements.StrongAgreement;
 
 import java.io.IOException;
