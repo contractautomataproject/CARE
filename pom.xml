@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>CARE</name>
-	<groupId>io.github.contractautomata</groupId>
+	<groupId>io.github.contractautomataproject</groupId>
 	<artifactId>CARE</artifactId>
 	<url>https://github.com/ContractAutomataProject/CARE</url>
 	<version>0.0.1-SNAPSHOT</version>
