@@ -28,14 +28,14 @@
 
 
 	<properties>
-		<maven.compiler.source>1.9</maven.compiler.source>
-		<maven.compiler.target>1.9</maven.compiler.target>
+		<maven.compiler.source>1.11</maven.compiler.source>
+		<maven.compiler.target>1.11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>io.github.contractautomata</groupId>
+			<groupId>io.github.contractautomataproject</groupId>
 			<artifactId>catlib</artifactId>
 			<version>1.0.0</version>
 		</dependency>
