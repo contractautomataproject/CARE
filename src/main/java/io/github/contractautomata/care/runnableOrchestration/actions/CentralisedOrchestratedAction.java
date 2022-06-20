@@ -22,7 +22,8 @@ public class CentralisedOrchestratedAction implements OrchestratedAction {
 	 * @param oout		output to the orchestrator
 	 * @param t			transition of the contract selected to be fired
 	 */
-	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
+	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout,
+							 ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
 		Class<?> c=m1.getParameterTypes()[0];
 		Object req=m1.invoke(rc.getService(),c.cast(oin.readObject()));
 		oout.writeObject(req);
