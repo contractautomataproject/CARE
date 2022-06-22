@@ -35,6 +35,18 @@ When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <
 A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CATLib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
+### Install
+
+The Contract Automata Library is released as a GitHub Package, simply add this dependency to the pom.xml of your Maven project.
+
+```
+<dependency>
+  <groupId>io.github.contractautomata</groupId>
+  <artifactId>care</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ### Usage
 
 Check https://github.com/ContractAutomataProject/CARE_Example  for an example of usage of <tt>CARE</tt>.
