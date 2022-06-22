@@ -13,7 +13,7 @@
  
 ### Install
 
-The Contract Automata Library is released as a GitHub Package, simply add this dependency to the pom.xml of your Maven project.
+The Contract Automata Runtime Environment is released as a GitHub Package, simply add this dependency to the pom.xml of your Maven project.
 
 ```
 <dependency>
