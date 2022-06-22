@@ -17,7 +17,7 @@ The Contract Automata Runtime Environment is released as a GitHub Package, simpl
 
 ```xml
 <dependency>
-  <groupId>io.github.contractautomata</groupId>
+  <groupId>io.github.contractautomataproject</groupId>
   <artifactId>care</artifactId>
   <version>1.0.0</version>
 </dependency>
