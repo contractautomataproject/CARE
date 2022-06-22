@@ -15,7 +15,7 @@
 
 The Contract Automata Runtime Environment is released as a GitHub Package, simply add this dependency to the pom.xml of your Maven project.
 
-```
+```xml
 <dependency>
   <groupId>io.github.contractautomata</groupId>
   <artifactId>care</artifactId>
