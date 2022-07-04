@@ -42,7 +42,6 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 			if (type.equals("match"))	
 			{
 				//if is a match communicate with the requester
-				
 				ServerSocket ss = new ServerSocket(0);//find a port available
 				oout.writeObject(ss.getLocalPort());//communicate the port to the orchestrator
 				
@@ -55,7 +54,7 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 					//receive request from the requester and invoke offer method
 					Object offer=m1.invoke(rc.getService(),c.cast(osin.readObject()));
 
-					//provide offer
+					//provide offer to the requester
 					osout.writeObject(offer);
 					osout.flush();
 
@@ -83,7 +82,7 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 
 			try (Socket socket = new Socket(InetAddress.getByName(address), port);
 					ObjectOutputStream osout = new ObjectOutputStream(socket.getOutputStream());
-					ObjectInputStream osin = new ObjectInputStream(socket.getInputStream());)
+					ObjectInputStream osin = new ObjectInputStream(socket.getInputStream()))
 			{
 				osout.flush();
 				//send request to the offerer

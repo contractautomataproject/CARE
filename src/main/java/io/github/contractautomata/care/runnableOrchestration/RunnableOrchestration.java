@@ -82,8 +82,7 @@ public abstract class RunnableOrchestration implements Runnable {
 
 	}
 
-	public RunnableOrchestration(Automaton<String, Action, State<String>,ModalTransition<String,Action,State<String>,Label<Action>>> req,
-								 Predicate<CALabel> pred,
+	public RunnableOrchestration(Predicate<CALabel> pred,
 								 Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> orchestration,
 								 List<String> hosts, List<Integer> port, OrchestratorAction act) throws ClassNotFoundException, IOException {
 		super();

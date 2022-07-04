@@ -3,11 +3,14 @@ package io.github.contractautomata.care.runnableOrchestration.choice;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 
 import io.github.contractautomata.care.runnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.care.runnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.care.runnableOrchestration.actions.OrchestratedAction;
+import io.github.contractautomata.care.runnableOrchestration.actions.OrchestratorAction;
 import io.github.contractautomata.catlib.automaton.Automaton;
 import io.github.contractautomata.catlib.automaton.label.CALabel;
 import io.github.contractautomata.catlib.automaton.label.action.Action;
@@ -52,7 +55,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 		oout.flush();		
 	}
 
-	
+
 	/**
 	 * To override for changing policy of selection
 	 * 

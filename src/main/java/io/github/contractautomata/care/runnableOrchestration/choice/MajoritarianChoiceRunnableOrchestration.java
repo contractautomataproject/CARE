@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -40,6 +41,16 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		super(req, pred, contracts, hosts, port, act);
 	}
 
+
+
+	public MajoritarianChoiceRunnableOrchestration(Predicate<CALabel> pred,
+												   Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> orchestration,
+												   List<String> hosts, List<Integer> port, OrchestratorAction act) throws ClassNotFoundException, IOException {
+		super(pred,orchestration,hosts,port,act);
+
+	}
+
+
 	@Override
 	public String choice(AutoCloseableList<ObjectOutputStream> oout, AutoCloseableList<ObjectInputStream> oin)
 			throws IOException, ClassNotFoundException {
@@ -49,9 +60,9 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		.getForwardStar(this.getCurrentState()).stream()
 		.flatMap(t->t.getLabel().isOffer()?Stream.of(t.getLabel().getOfferer())
 				:Stream.of(t.getLabel().getOfferer(),t.getLabel().getRequester()))
-		.distinct().collect(Collectors.toSet());
+		.collect(Collectors.toSet());
 		
-		//asking either to choose or skip to the services
+		//asking to the services either to choose or to skip
 		for (int i=0;i<oout.size();i++){
 			ObjectOutputStream oos = oout.get(i);
 			oos.writeObject(toInvoke.contains(i)?RunnableOrchestration.choice_msg:null);
@@ -69,14 +80,14 @@ public class MajoritarianChoiceRunnableOrchestration extends RunnableOrchestrati
 		}
 		
 		//receiving the choice of each service
-		List<String> choices = new ArrayList<>(); 
-		for (int i=0;i<oin.size();i++)
+		List<String> choices = new ArrayList<>(toInvoke.size());
+		for (Integer i : toInvoke)
 			choices.add((String) oin.get(i).readObject());
 		
 		return	choices.stream()
 		.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
 		.entrySet().stream()
-		.max((x,y)->x.getValue().intValue()-y.getValue().intValue()).orElseThrow(RuntimeException::new).getKey();
+		.max(Comparator.comparingInt(x -> x.getValue().intValue())).orElseThrow(RuntimeException::new).getKey();
 		
 	}
 
