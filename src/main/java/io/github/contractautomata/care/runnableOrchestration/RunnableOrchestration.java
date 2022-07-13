@@ -41,6 +41,7 @@ public abstract class RunnableOrchestration implements Runnable {
 	private final Predicate<CALabel> pred;
 	private State<String> currentState;
 	private final OrchestratorAction act;
+	private final int timeout=600000;//10 minutes
 
 
 	public RunnableOrchestration(Automaton<String, Action, State<String>, ModalTransition<String, Action, State<String>, Label<Action>>> req,
@@ -136,6 +137,7 @@ public abstract class RunnableOrchestration implements Runnable {
 		{
 			for (int i=0;i<ports.size();i++) {
 				Socket s = new Socket(InetAddress.getByName(addresses.get(i)), ports.get(i));
+				s.setSoTimeout(timeout);
 				sockets.add(s);
 				oout.add(new ObjectOutputStream(s.getOutputStream()));
 				oout.get(i).flush();
@@ -224,6 +226,7 @@ public abstract class RunnableOrchestration implements Runnable {
 				 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
 				 ObjectInputStream ois = new ObjectInputStream(s.getInputStream()))
 			{
+				s.setSoTimeout(timeout);
 				oos.writeObject(check_msg);
 				oos.writeObject(this.getChoiceType());
 				oos.writeObject(this.act.getActionType());
