@@ -28,4 +28,4 @@ The `RunnableOrchestratedContract` automaton with traceability is displayed belo
 The `RunnableOrchestration` automaton with traceability is displayed below.
 
 [RunnableOrchestration](https://github.com/contractautomataproject/CARE/raw/master/src/spec/uppaal/RunnableOrchestration.svg?sanitize=true)
-<img src="https://raw.githubusercontent.com/contractautomataproject/CARE/master/src/spec/uppaal/RunnableOrchestration.svg?sanitize=true">
+<img src="https://raw.githubusercontent.com/contractautomataproject/CARE/9b9ebda1528394b868272c8672e4d96b5ce6ee09/src/spec/uppaal/RunnableOrchestration.svg?sanitize=true">
