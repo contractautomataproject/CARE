@@ -4,12 +4,13 @@
 	<declaration>// Place global declarations here.
 const int queueSize=4;
 const int N = 3;
+const double pstop = 0.25; //probability of stopping, in the interval [0,1]
 
 //actions and choics IDs
-const int DICTATORIAL_CHOICE = 0;
-const int MAJORITARIAN_CHOICE = 1; 
-const int CENTRALISED_ACTION = 2;
-const int DISTRIBUTED_ACTION = 3;
+const int DICTATORIAL_CHOICE = 1;
+const int MAJORITARIAN_CHOICE = 2; 
+const int CENTRALISED_ACTION = 3;
+const int DISTRIBUTED_ACTION = 4;
 
 
 typedef int[0,N] id_t; //all IDs
@@ -40,24 +41,9 @@ int services2orc[N][queueSize];
 int requester2offerer;
 int offerer2requester;
 
-const int nil = -1;	 //empty position in the buffer
+const int nil = 0;	 //empty position in the buffer
 
-broadcast chan closeSocket;
 
-int dequeue(int id,int &amp;queue[N][queueSize])
-{
-    int i;
-    for (i:=0;i&lt;queueSize;i++)
-    {    
-        if (queue[id][i]!=nil)
-        {
-			int e=queue[id][i];   //remove and return the first encountered message starting from zero, no need to shift
-			queue[id][i]=nil;
-            return e;
-        }
-    }
-    return nil;
-}
 
 bool allEmpty(){
     int i=0;
@@ -95,6 +81,7 @@ void initialize(){
     }
     requester2offerer=nil;
     offerer2requester=nil;
+
 }
 
 void enqueue(int id,int ide_sig)
@@ -130,45 +117,55 @@ int available(int id)
   return count;
 }
 
-int dequeueOrc(int id)
+int dequeue(int id)
 {
-    return dequeue(id,services2orc);
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (services2orc[id][i]!=nil)
+        {
+			int e=services2orc[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			services2orc[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
 }</declaration>
-		<location id="id0" x="-68459" y="-68017">
-			<name x="-68518" y="-68060">CheckCompatibility</name>
+		<location id="id0" x="-68442" y="-68017">
+			<name x="-68501" y="-68051">CheckCompatibility</name>
 			<urgent/>
 		</location>
-		<location id="id1" x="-68459" y="-68170">
-			<label kind="invariant" x="-68476" y="-68204">N&lt;=10</label>
+		<location id="id1" x="-68442" y="-68127">
 			<committed/>
 		</location>
-		<location id="id2" x="-68459" y="-67600">
-			<name x="-68451" y="-67634">Error</name>
+		<location id="id2" x="-68442" y="-67600">
+			<name x="-68434" y="-67634">Error</name>
 		</location>
-		<location id="id3" x="-68459" y="-67855">
+		<location id="id3" x="-68442" y="-67855">
 			<urgent/>
 		</location>
-		<location id="id4" x="-68459" y="-67745">
+		<location id="id4" x="-68442" y="-67745">
 			<urgent/>
 		</location>
 		<location id="id5" x="-67966" y="-68017">
 			<name x="-67976" y="-68051">Choice</name>
 			<urgent/>
 		</location>
-		<location id="id6" x="-68306" y="-67643">
-			<name x="-68331" y="-67677">Action</name>
+		<location id="id6" x="-68305" y="-67702">
+			<name x="-68297" y="-67727">Action</name>
 			<committed/>
 		</location>
-		<location id="id7" x="-68340" y="-68017">
+		<location id="id7" x="-68323" y="-68017">
+			<name x="-68340" y="-68051">Start</name>
 			<urgent/>
 		</location>
-		<location id="id8" x="-67686" y="-68017">
+		<location id="id8" x="-67762" y="-68017">
 			<urgent/>
 		</location>
-		<location id="id9" x="-68085" y="-67643">
+		<location id="id9" x="-68178" y="-67702">
 			<urgent/>
 		</location>
-		<location id="id10" x="-68306" y="-67318">
+		<location id="id10" x="-68306" y="-67394">
 			<urgent/>
 		</location>
 		<location id="id11" x="-68076" y="-67864">
@@ -179,185 +176,184 @@ int dequeueOrc(int id)
 			<name x="-67966" y="-67898">SendingTermination</name>
 			<urgent/>
 		</location>
-		<location id="id13" x="-67932" y="-67779">
-			<name x="-67975" y="-67762">Terminated</name>
+		<location id="id13" x="-67932" y="-67796">
+			<name x="-67915" y="-67804">Terminated</name>
 		</location>
-		<location id="id14" x="-67507" y="-68017">
+		<location id="id14" x="-67583" y="-68017">
 			<urgent/>
 		</location>
-		<location id="id15" x="-67337" y="-68017">
+		<location id="id15" x="-67430" y="-68017">
 			<urgent/>
 		</location>
-		<location id="id16" x="-68306" y="-67864">
+		<location id="id16" x="-68306" y="-67915">
 			<urgent/>
 		</location>
 		<location id="id17" x="-68085" y="-68017">
 			<urgent/>
 		</location>
-		<location id="id18" x="-67966" y="-67643">
-			<name x="-68009" y="-67677">CentralisedOffer</name>
+		<location id="id18" x="-68059" y="-67702">
+			<name x="-68102" y="-67736">CentralisedOffer</name>
 			<urgent/>
 		</location>
-		<location id="id19" x="-67940" y="-67509">
-			<name x="-67999" y="-67543">CentralisedMatch</name>
+		<location id="id19" x="-68033" y="-67568">
+			<name x="-68092" y="-67602">CentralisedMatch</name>
 			<urgent/>
 		</location>
-		<location id="id20" x="-67761" y="-67643">
+		<location id="id20" x="-67854" y="-67702">
 			<urgent/>
 		</location>
-		<location id="id21" x="-67727" y="-67509">
+		<location id="id21" x="-67820" y="-67568">
 			<urgent/>
 		</location>
-		<location id="id22" x="-67532" y="-67508">
+		<location id="id22" x="-67625" y="-67567">
 			<urgent/>
 		</location>
-		<location id="id23" x="-67328" y="-67507">
+		<location id="id23" x="-67421" y="-67566">
 			<urgent/>
 		</location>
-		<location id="id24" x="-67328" y="-67660">
+		<location id="id24" x="-67421" y="-67719">
 			<urgent/>
 		</location>
-		<location id="id25" x="-68306" y="-67200">
+		<location id="id25" x="-68306" y="-67276">
 			<urgent/>
 		</location>
-		<location id="id26" x="-68204" y="-67336">
-			<name x="-68254" y="-67370">DistributedOffer</name>
+		<location id="id26" x="-68272" y="-67362">
+			<name x="-68289" y="-67387">DistributedOffer</name>
 			<urgent/>
 		</location>
-		<location id="id27" x="-68144" y="-67201">
-			<name x="-68154" y="-67235">DistributedMatch</name>
+		<location id="id27" x="-68212" y="-67277">
+			<name x="-68272" y="-67260">DistributedMatch</name>
 			<urgent/>
 		</location>
-		<location id="id28" x="-67881" y="-67337">
+		<location id="id28" x="-68017" y="-67362">
 			<urgent/>
 		</location>
-		<location id="id29" x="-67931" y="-67201">
+		<location id="id29" x="-67999" y="-67277">
 			<urgent/>
 		</location>
-		<location id="id30" x="-67711" y="-67201">
+		<location id="id30" x="-67770" y="-67277">
 			<urgent/>
 		</location>
-		<location id="id31" x="-67524" y="-67201">
+		<location id="id31" x="-67609" y="-67277">
 			<urgent/>
 		</location>
-		<location id="id32" x="-67354" y="-67201">
+		<location id="id32" x="-67422" y="-67277">
 			<urgent/>
 		</location>
-		<location id="id33" x="-67354" y="-67371">
+		<location id="id33" x="-67422" y="-67489">
 			<urgent/>
 		</location>
-		<location id="id34" x="-67337" y="-67889">
+		<location id="id34" x="-67430" y="-67889">
 			<urgent/>
 		</location>
-		<location id="id35" x="-67575" y="-67643">
+		<location id="id35" x="-67668" y="-67702">
 			<urgent/>
 		</location>
-		<branchpoint id="id36" x="-68204" y="-67200">
+		<branchpoint id="id36" x="-68272" y="-67276">
 		</branchpoint>
-		<branchpoint id="id37" x="-68042" y="-67643">
+		<branchpoint id="id37" x="-68135" y="-67702">
 		</branchpoint>
-		<branchpoint id="id38" x="-68306" y="-67796">
+		<branchpoint id="id38" x="-68306" y="-67830">
 		</branchpoint>
-		<branchpoint id="id39" x="-68162" y="-68017">
+		<branchpoint id="id39" x="-68187" y="-68017">
 		</branchpoint>
 		<init ref="id1"/>
 		<transition>
 			<source ref="id35"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-67643" y="-67711">d==OFFER</label>
-			<label kind="assignment" x="-67600" y="-67702">d=0</label>
-			<nail x="-67575" y="-67711"/>
-			<nail x="-68340" y="-67711"/>
+			<label kind="guard" x="-67736" y="-67770">d==OFFER</label>
+			<label kind="assignment" x="-67693" y="-67761">d=0</label>
+			<nail x="-67668" y="-67770"/>
+			<nail x="-68322" y="-67770"/>
 		</transition>
 		<transition>
 			<source ref="id20"/>
 			<target ref="id35"/>
-			<label kind="guard" x="-67719" y="-67660">!isEmpty(offerer)</label>
-			<label kind="assignment" x="-67743" y="-67643">d=dequeueOrc(offerer),
+			<label kind="guard" x="-67812" y="-67719">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67836" y="-67702">d=dequeue(offerer),
 offerer=0</label>
 		</transition>
 		<transition>
 			<source ref="id34"/>
 			<target ref="id15"/>
-			<label kind="guard" x="-67498" y="-67889">d==SERVICE_CHOICE</label>
-			<label kind="assignment" x="-67405" y="-67872">d=0,i++</label>
-			<nail x="-67473" y="-67889"/>
-			<nail x="-67473" y="-67983"/>
+			<label kind="guard" x="-67591" y="-67889">d==SERVICE_CHOICE</label>
+			<label kind="assignment" x="-67498" y="-67872">d=0,i++</label>
+			<nail x="-67566" y="-67889"/>
+			<nail x="-67566" y="-67983"/>
 		</transition>
 		<transition>
 			<source ref="id15"/>
 			<target ref="id34"/>
-			<label kind="guard" x="-67405" y="-67983">i&lt;involved&amp;&amp;
+			<label kind="guard" x="-67498" y="-67983">i&lt;involved&amp;&amp;
 !isEmpty(i)</label>
-			<label kind="assignment" x="-67447" y="-67949">d=dequeueOrc(i)</label>
+			<label kind="assignment" x="-67515" y="-67940">d=dequeue(i)</label>
 		</transition>
 		<transition>
 			<source ref="id33"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-67431" y="-67430">d==ACK</label>
-			<label kind="assignment" x="-67414" y="-67413">d=0</label>
-			<nail x="-67354" y="-67413"/>
-			<nail x="-68340" y="-67413"/>
+			<label kind="guard" x="-67593" y="-67506">d==ACK</label>
+			<label kind="assignment" x="-67576" y="-67489">d=0</label>
+			<nail x="-68323" y="-67489"/>
 		</transition>
 		<transition>
 			<source ref="id32"/>
 			<target ref="id33"/>
-			<label kind="guard" x="-67490" y="-67353">!isEmpty(requester)</label>
-			<label kind="assignment" x="-67532" y="-67336">d=dequeueOrc(requester),
+			<label kind="guard" x="-67549" y="-67430">!isEmpty(requester)</label>
+			<label kind="assignment" x="-67566" y="-67413">d=dequeue(requester),
 requester=0</label>
 		</transition>
 		<transition>
 			<source ref="id31"/>
 			<target ref="id32"/>
-			<label kind="guard" x="-67507" y="-67244">available(requester)&gt;=2
+			<label kind="guard" x="-67592" y="-67311">available(requester)&gt;=2
 &amp;&amp;d==PORT</label>
-			<label kind="assignment" x="-67515" y="-67193">enqueue(requester,ADDRESS),
+			<label kind="assignment" x="-67600" y="-67269">enqueue(requester,ADDRESS),
 enqueue(requester,PORT),
 d=0,offerer=0</label>
 		</transition>
 		<transition>
 			<source ref="id30"/>
 			<target ref="id31"/>
-			<label kind="guard" x="-67685" y="-67218">!isEmpty(offerer)</label>
-			<label kind="assignment" x="-67694" y="-67200">d=dequeueOrc(offerer)</label>
+			<label kind="guard" x="-67753" y="-67294">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67753" y="-67277">d=dequeue(offerer)</label>
 		</transition>
 		<transition>
 			<source ref="id29"/>
 			<target ref="id30"/>
-			<label kind="guard" x="-67889" y="-67218">!isFull(offerer)</label>
-			<label kind="assignment" x="-67915" y="-67200">enqueue(offerer,TYPEMATCH)</label>
+			<label kind="guard" x="-67957" y="-67294">!isFull(offerer)</label>
+			<label kind="assignment" x="-67983" y="-67276">enqueue(offerer,TYPEMATCH)</label>
 		</transition>
 		<transition>
 			<source ref="id27"/>
 			<target ref="id29"/>
-			<label kind="guard" x="-68110" y="-67218">!isFull(requester)</label>
-			<label kind="assignment" x="-68128" y="-67200">enqueue(requester,ACTION)</label>
+			<label kind="guard" x="-68178" y="-67294">!isFull(requester)</label>
+			<label kind="assignment" x="-68196" y="-67276">enqueue(requester,ACTION)</label>
 		</transition>
 		<transition>
 			<source ref="id28"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-68094" y="-67430">!isEmpty(offerer)</label>
-			<label kind="assignment" x="-68094" y="-67413">d=dequeueOrc(offerer),d=0,
+			<label kind="guard" x="-68102" y="-67481">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-68119" y="-67464">d=dequeue(offerer),d=0,
 offerer=0</label>
-			<nail x="-67881" y="-67413"/>
-			<nail x="-68340" y="-67413"/>
+			<nail x="-68018" y="-67490"/>
+			<nail x="-68323" y="-67489"/>
 		</transition>
 		<transition>
 			<source ref="id26"/>
 			<target ref="id28"/>
-			<label kind="guard" x="-68127" y="-67354">available(offerer)&gt;=2</label>
-			<label kind="assignment" x="-68127" y="-67337">enqueue(offerer,TYPEOFFER),
+			<label kind="guard" x="-68170" y="-67387">available(offerer)&gt;=2</label>
+			<label kind="assignment" x="-68221" y="-67362">enqueue(offerer,TYPEOFFER),
 enqueue(offerer,NOPAYLOAD)</label>
 		</transition>
 		<transition>
 			<source ref="id36"/>
 			<target ref="id27"/>
-			<label kind="probability" x="-68187" y="-67218">1</label>
+			<label kind="probability" x="-68255" y="-67294">1</label>
 		</transition>
 		<transition>
 			<source ref="id36"/>
 			<target ref="id26"/>
-			<label kind="probability" x="-68196" y="-67319">1</label>
+			<label kind="probability" x="-68272" y="-67319">1</label>
 		</transition>
 		<transition>
 			<source ref="id25"/>
@@ -366,9 +362,9 @@ enqueue(offerer,NOPAYLOAD)</label>
 		<transition>
 			<source ref="id10"/>
 			<target ref="id25"/>
-			<label kind="select" x="-68391" y="-67294">n:int[0,N-2]</label>
-			<label kind="guard" x="-68391" y="-67277">!isFull(n)</label>
-			<label kind="assignment" x="-68425" y="-67260">offerer=n,
+			<label kind="select" x="-68374" y="-67362">n:int[0,N-2]</label>
+			<label kind="guard" x="-68365" y="-67345">!isFull(n)</label>
+			<label kind="assignment" x="-68416" y="-67336">offerer=n,
 requester=n+1,
 enqueue(offerer,
         ACTION)</label>
@@ -376,61 +372,61 @@ enqueue(offerer,
 		<transition>
 			<source ref="id24"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-67532" y="-67736">!isFull(requester)&amp;&amp;d==OFFER</label>
-			<label kind="assignment" x="-67524" y="-67711">enqueue(requester,OFFER),
+			<label kind="guard" x="-67625" y="-67787">!isFull(requester)&amp;&amp;d==OFFER</label>
+			<label kind="assignment" x="-67617" y="-67770">enqueue(requester,OFFER),
 requester=0,d=0</label>
-			<nail x="-67329" y="-67711"/>
-			<nail x="-68340" y="-67711"/>
+			<nail x="-67422" y="-67770"/>
+			<nail x="-68322" y="-67770"/>
 		</transition>
 		<transition>
 			<source ref="id23"/>
 			<target ref="id24"/>
-			<label kind="guard" x="-67439" y="-67643">!isEmpty(offerer)</label>
-			<label kind="assignment" x="-67481" y="-67626">d=dequeueOrc(offerer),
+			<label kind="guard" x="-67532" y="-67702">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67549" y="-67685">d=dequeue(offerer),
 offerer=0</label>
 		</transition>
 		<transition>
 			<source ref="id22"/>
 			<target ref="id23"/>
-			<label kind="guard" x="-67498" y="-67551">available(offerer)&gt;=2
+			<label kind="guard" x="-67591" y="-67610">available(offerer)&gt;=2
 &amp;&amp;d==REQUEST</label>
-			<label kind="assignment" x="-67515" y="-67507">enqueue(offerer,ACTION),
+			<label kind="assignment" x="-67608" y="-67566">enqueue(offerer,ACTION),
 enqueue(offerer,REQUEST)</label>
 		</transition>
 		<transition>
 			<source ref="id21"/>
 			<target ref="id22"/>
-			<label kind="guard" x="-67711" y="-67534">!isEmpty(requester)</label>
-			<label kind="assignment" x="-67709" y="-67509">d=dequeueOrc(requester)</label>
+			<label kind="guard" x="-67804" y="-67593">!isEmpty(requester)</label>
+			<label kind="assignment" x="-67802" y="-67568">d=dequeue(requester)</label>
 		</transition>
 		<transition>
 			<source ref="id19"/>
 			<target ref="id21"/>
-			<label kind="select" x="-67880" y="-67551">n:int[0,N-2]</label>
-			<label kind="guard" x="-67880" y="-67534">available(n)&gt;=2</label>
-			<label kind="assignment" x="-67922" y="-67509">requester=n,offerer=n+1,
+			<label kind="select" x="-67973" y="-67610">n:int[0,N-2]</label>
+			<label kind="guard" x="-67973" y="-67593">available(n)&gt;=2</label>
+			<label kind="assignment" x="-68015" y="-67568">requester=n,offerer=n+1,
 enqueue(requester,ACTION),
 enqueue(requester,SKIP)</label>
 		</transition>
 		<transition>
 			<source ref="id18"/>
 			<target ref="id20"/>
-			<label kind="select" x="-67872" y="-67677">n:int[0,N-1]</label>
-			<label kind="guard" x="-67923" y="-67660">available(n)&gt;=2</label>
-			<label kind="assignment" x="-67932" y="-67643">offerer=n,
+			<label kind="select" x="-67965" y="-67736">n:int[0,N-1]</label>
+			<label kind="guard" x="-68016" y="-67719">available(n)&gt;=2</label>
+			<label kind="assignment" x="-68025" y="-67702">offerer=n,
 enqueue(offerer,ACTION),
 enqueue(offerer,NOPAYLOAD)</label>
 		</transition>
 		<transition>
 			<source ref="id37"/>
 			<target ref="id19"/>
-			<label kind="probability" x="-68025" y="-67526">1</label>
-			<nail x="-68042" y="-67509"/>
+			<label kind="probability" x="-68118" y="-67585">1</label>
+			<nail x="-68135" y="-67568"/>
 		</transition>
 		<transition>
 			<source ref="id37"/>
 			<target ref="id18"/>
-			<label kind="probability" x="-68025" y="-67660">1</label>
+			<label kind="probability" x="-68118" y="-67719">1</label>
 		</transition>
 		<transition>
 			<source ref="id9"/>
@@ -439,11 +435,10 @@ enqueue(offerer,NOPAYLOAD)</label>
 		<transition>
 			<source ref="id17"/>
 			<target ref="id17"/>
-			<label kind="guard" x="-68144" y="-68128">i&lt;N &amp;&amp; !isFull(i)</label>
-			<label kind="assignment" x="-68144" y="-68111">enqueue(i,ORC_CHOICE),
-i++</label>
-			<nail x="-68085" y="-68094"/>
-			<nail x="-68034" y="-68094"/>
+			<label kind="guard" x="-68127" y="-67974">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-68127" y="-67957">enqueue(i,ORC_CHOICE),i++</label>
+			<nail x="-68093" y="-67974"/>
+			<nail x="-68068" y="-67974"/>
 		</transition>
 		<transition>
 			<source ref="id17"/>
@@ -454,26 +449,26 @@ i++</label>
 		<transition>
 			<source ref="id39"/>
 			<target ref="id17"/>
-			<label kind="probability" x="-68154" y="-68034">1</label>
+			<label kind="probability" x="-68178" y="-68034">(1-pstop)/2</label>
 		</transition>
 		<transition>
 			<source ref="id15"/>
 			<target ref="id16"/>
-			<label kind="guard" x="-68289" y="-68238">i==involved</label>
-			<label kind="assignment" x="-68288" y="-68221">i=0,involved=0</label>
-			<nail x="-67337" y="-68221"/>
-			<nail x="-68306" y="-68221"/>
+			<label kind="guard" x="-68289" y="-68136">i==involved</label>
+			<label kind="assignment" x="-68204" y="-68136">i=0,involved=0</label>
+			<nail x="-67430" y="-68119"/>
+			<nail x="-68306" y="-68119"/>
 		</transition>
 		<transition>
 			<source ref="id38"/>
 			<target ref="id6"/>
-			<label kind="probability" x="-68315" y="-67787">1</label>
+			<label kind="probability" x="-68314" y="-67813">1-pstop</label>
 		</transition>
 		<transition>
 			<source ref="id38"/>
 			<target ref="id11"/>
-			<label kind="probability" x="-68298" y="-67813">1</label>
-			<nail x="-68077" y="-67796"/>
+			<label kind="probability" x="-68298" y="-67847">pstop</label>
+			<nail x="-68077" y="-67830"/>
 		</transition>
 		<transition>
 			<source ref="id16"/>
@@ -482,50 +477,50 @@ i++</label>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id16"/>
-			<label kind="guard" x="-68255" y="-68187">choice==DICTATORIAL_CHOICE</label>
-			<nail x="-67966" y="-68170"/>
-			<nail x="-68306" y="-68170"/>
+			<label kind="guard" x="-68255" y="-68085">choice==DICTATORIAL_CHOICE</label>
+			<nail x="-67966" y="-68068"/>
+			<nail x="-68306" y="-68068"/>
 		</transition>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id15"/>
-			<label kind="guard" x="-67464" y="-68034">i==involved</label>
-			<label kind="assignment" x="-67464" y="-68017">i=0</label>
+			<label kind="guard" x="-67532" y="-68034">i==involved</label>
+			<label kind="assignment" x="-67532" y="-68017">i=0</label>
 		</transition>
 		<transition>
 			<source ref="id14"/>
 			<target ref="id14"/>
-			<label kind="guard" x="-67532" y="-68127">i&lt;involved &amp;&amp; !isFull(i)</label>
-			<label kind="assignment" x="-67532" y="-68110">enqueue(i,CHOICES),
+			<label kind="guard" x="-67608" y="-68097">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67608" y="-68080">enqueue(i,CHOICES),
 i++</label>
-			<nail x="-67506" y="-68089"/>
-			<nail x="-67447" y="-68089"/>
+			<nail x="-67582" y="-68059"/>
+			<nail x="-67566" y="-68059"/>
 		</transition>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id14"/>
-			<label kind="guard" x="-67610" y="-68034">i==N</label>
-			<label kind="assignment" x="-67609" y="-68017">i=0</label>
+			<label kind="guard" x="-67686" y="-68034">i==N</label>
+			<label kind="assignment" x="-67685" y="-68017">i=0</label>
 		</transition>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id8"/>
-			<label kind="guard" x="-67754" y="-67949">i&gt;=involved &amp;&amp; i&lt;N &amp;&amp;!isFull(i)</label>
-			<label kind="assignment" x="-67686" y="-67932">enqueue(i,SKIP),
+			<label kind="guard" x="-67812" y="-67949">i&gt;=involved &amp;&amp; i&lt;N &amp;&amp;!isFull(i)</label>
+			<label kind="assignment" x="-67762" y="-67932">enqueue(i,SKIP),
 i++</label>
-			<nail x="-67686" y="-67949"/>
-			<nail x="-67618" y="-67949"/>
+			<nail x="-67762" y="-67949"/>
+			<nail x="-67719" y="-67949"/>
 		</transition>
 		<transition>
 			<source ref="id12"/>
 			<target ref="id13"/>
-			<label kind="guard" x="-67966" y="-67813">i==N</label>
+			<label kind="guard" x="-67966" y="-67830">i==N</label>
 		</transition>
 		<transition>
 			<source ref="id12"/>
 			<target ref="id12"/>
-			<label kind="guard" x="-67873" y="-67864">i&lt;N &amp;&amp; !isFull(i)</label>
-			<label kind="assignment" x="-67872" y="-67847">enqueue(i,ORC_STOP),
+			<label kind="guard" x="-67872" y="-67872">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67881" y="-67855">enqueue(i,ORC_STOP),
 i++</label>
 			<nail x="-67881" y="-67864"/>
 			<nail x="-67881" y="-67821"/>
@@ -533,11 +528,11 @@ i++</label>
 		<transition>
 			<source ref="id8"/>
 			<target ref="id8"/>
-			<label kind="guard" x="-67737" y="-68127">i&lt;involved &amp;&amp; !isFull(i)</label>
-			<label kind="assignment" x="-67737" y="-68110">enqueue(i,ORC_CHOICE),
+			<label kind="guard" x="-67813" y="-68097">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67813" y="-68080">enqueue(i,ORC_CHOICE),
 i++</label>
-			<nail x="-67686" y="-68093"/>
-			<nail x="-67626" y="-68093"/>
+			<nail x="-67762" y="-68063"/>
+			<nail x="-67744" y="-68059"/>
 		</transition>
 		<transition>
 			<source ref="id11"/>
@@ -547,33 +542,34 @@ i++</label>
 		<transition>
 			<source ref="id39"/>
 			<target ref="id11"/>
-			<label kind="probability" x="-68145" y="-67881">0.5</label>
-			<nail x="-68162" y="-67864"/>
+			<label kind="probability" x="-68145" y="-67881">pstop</label>
+			<nail x="-68187" y="-67864"/>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id10"/>
-			<label kind="guard" x="-68434" y="-67387">action==
+			<label kind="guard" x="-68416" y="-67447">action==
 DISTRIBUTED_ACTION</label>
 		</transition>
 		<transition>
 			<source ref="id6"/>
 			<target ref="id9"/>
-			<label kind="guard" x="-68281" y="-67685">action==
+			<label kind="guard" x="-68296" y="-67702">action==
 CENTRALISED_ACTION</label>
 		</transition>
 		<transition>
 			<source ref="id5"/>
 			<target ref="id8"/>
-			<label kind="select" x="-67940" y="-68034">n:int[1,N]</label>
-			<label kind="guard" x="-67949" y="-68017">choice==MAJORITARIAN_CHOICE</label>
-			<label kind="assignment" x="-67949" y="-68000">involved=n</label>
+			<label kind="select" x="-67932" y="-68034">n:int[1,N]</label>
+			<label kind="guard" x="-67940" y="-68017">choice==
+MAJORITARIAN_CHOICE</label>
+			<label kind="assignment" x="-67915" y="-67983">involved=n</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id7"/>
-			<label kind="guard" x="-68434" y="-68034">i==N</label>
-			<label kind="assignment" x="-68441" y="-68017">i=0</label>
+			<label kind="guard" x="-68374" y="-68034">i==N</label>
+			<label kind="assignment" x="-68374" y="-68017">i=0</label>
 		</transition>
 		<transition>
 			<source ref="id7"/>
@@ -582,42 +578,41 @@ CENTRALISED_ACTION</label>
 		<transition>
 			<source ref="id39"/>
 			<target ref="id6"/>
-			<label kind="probability" x="-68170" y="-67855">1</label>
-			<nail x="-68162" y="-67762"/>
-			<nail x="-68306" y="-67762"/>
+			<label kind="probability" x="-68238" y="-67864">(1-pstop)/2</label>
+			<nail x="-68187" y="-67779"/>
+			<nail x="-68306" y="-67779"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id2"/>
-			<label kind="guard" x="-68536" y="-67660">d==ERROR</label>
-			<label kind="synchronisation" x="-68536" y="-67643">closeSocket!</label>
+			<label kind="guard" x="-68442" y="-67677">d==ERROR</label>
 		</transition>
 		<transition>
 			<source ref="id4"/>
 			<target ref="id0"/>
-			<label kind="guard" x="-68612" y="-67983">d==ACK</label>
-			<label kind="assignment" x="-68612" y="-67966">i++,d=0</label>
-			<nail x="-68544" y="-67745"/>
-			<nail x="-68544" y="-68017"/>
+			<label kind="guard" x="-68425" y="-67762">d==ACK</label>
+			<label kind="assignment" x="-68425" y="-67745">i++,d=0</label>
+			<nail x="-68357" y="-67745"/>
+			<nail x="-68357" y="-67966"/>
 		</transition>
 		<transition>
 			<source ref="id3"/>
 			<target ref="id4"/>
-			<label kind="guard" x="-68527" y="-67829">!isEmpty(i)</label>
-			<label kind="assignment" x="-68527" y="-67804">d=dequeueOrc(i)</label>
+			<label kind="guard" x="-68476" y="-67821">!isEmpty(i)</label>
+			<label kind="assignment" x="-68484" y="-67804">d=dequeue(i)</label>
 		</transition>
 		<transition>
 			<source ref="id0"/>
 			<target ref="id3"/>
-			<label kind="guard" x="-68510" y="-67957">i&lt;N &amp;&amp; available(i)&gt;=3</label>
-			<label kind="assignment" x="-68527" y="-67940">enqueue(i,ORC_CHECK), 
+			<label kind="guard" x="-68501" y="-67957">i&lt;N &amp;&amp; available(i)&gt;=3</label>
+			<label kind="assignment" x="-68510" y="-67940">enqueue(i,ORC_CHECK), 
 enqueue(i,choice),
 enqueue(i,action)</label>
 		</transition>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id0"/>
-			<label kind="assignment" x="-68459" y="-68127">initialize(),i=0</label>
+			<label kind="assignment" x="-68442" y="-68084">initialize(),i=0</label>
 		</transition>
 	</template>
 	<template>
@@ -628,7 +623,7 @@ int d2;
 int address;
 
 
-void enqueue(int id,int ide_sig)
+void enqueue(int ide_sig)
 {
     int i;
     int s=ide_sig;
@@ -640,17 +635,17 @@ void enqueue(int id,int ide_sig)
 
 }
 
-bool isEmpty(int id)
+bool isEmpty()
 {
     return orc2services[id][queueSize-1]==nil;
 }
 
-bool isFull(int id)
+bool isFull()
 {
     return services2orc[id][0]!=nil; 
 }
 
-int available(int id)
+int available()
 {
   int count=0;
   int i;
@@ -662,12 +657,22 @@ int available(int id)
   return count;
 }
 
-int dequeueServ(int id)
+int dequeue()
 {
-    return dequeue(id,orc2services);
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (orc2services[id][i]!=nil)
+        {
+			int e=orc2services[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			orc2services[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
 }</declaration>
-		<location id="id40" x="-66495" y="-67056">
-			<name x="-66512" y="-67090">Ready</name>
+		<location id="id40" x="-66453" y="-67056">
+			<name x="-66470" y="-67090">Ready</name>
 			<urgent/>
 		</location>
 		<location id="id41" x="-66301" y="-67056">
@@ -685,13 +690,13 @@ int dequeueServ(int id)
 		<location id="id45" x="-65790" y="-67056">
 			<urgent/>
 		</location>
-		<location id="id46" x="-65637" y="-67056">
+		<location id="id46" x="-65654" y="-67056">
 			<committed/>
 		</location>
-		<location id="id47" x="-65637" y="-67149">
+		<location id="id47" x="-65654" y="-67149">
 			<urgent/>
 		</location>
-		<location id="id48" x="-65637" y="-67235">
+		<location id="id48" x="-65654" y="-67235">
 			<urgent/>
 		</location>
 		<location id="id49" x="-66047" y="-66852">
@@ -700,7 +705,7 @@ int dequeueServ(int id)
 		<location id="id50" x="-66062" y="-66733">
 			<urgent/>
 		</location>
-		<location id="id51" x="-65893" y="-66853">
+		<location id="id51" x="-65909" y="-66852">
 			<urgent/>
 		</location>
 		<location id="id52" x="-66054" y="-66997">
@@ -709,10 +714,10 @@ int dequeueServ(int id)
 		<location id="id53" x="-66096" y="-67184">
 			<name x="-66106" y="-67218">Error</name>
 		</location>
-		<location id="id54" x="-65713" y="-66852">
+		<location id="id54" x="-65722" y="-66852">
 			<urgent/>
 		</location>
-		<location id="id55" x="-65560" y="-66852">
+		<location id="id55" x="-65586" y="-66852">
 			<committed/>
 		</location>
 		<location id="id56" x="-65900" y="-66733">
@@ -727,127 +732,129 @@ int dequeueServ(int id)
 		<location id="id59" x="-66300" y="-66504">
 			<urgent/>
 		</location>
-		<location id="id60" x="-65560" y="-66733">
+		<location id="id60" x="-65586" y="-66733">
 			<urgent/>
 		</location>
-		<location id="id61" x="-66122" y="-66580">
+		<location id="id61" x="-66147" y="-66580">
 			<urgent/>
 		</location>
-		<location id="id62" x="-66130" y="-66504">
+		<location id="id62" x="-66155" y="-66504">
 			<committed/>
 		</location>
-		<location id="id63" x="-65994" y="-66504">
+		<location id="id63" x="-66036" y="-66504">
 			<urgent/>
 		</location>
-		<location id="id64" x="-65763" y="-66506">
+		<location id="id64" x="-65807" y="-66504">
 			<urgent/>
 		</location>
-		<location id="id65" x="-65893" y="-66579">
+		<location id="id65" x="-65909" y="-66580">
 			<urgent/>
 		</location>
-		<location id="id66" x="-65552" y="-66504">
+		<location id="id66" x="-65586" y="-66504">
 			<urgent/>
 		</location>
 		<location id="id67" x="-65713" y="-66580">
+			<name x="-65723" y="-66614">Done</name>
 			<urgent/>
 		</location>
-		<location id="id68" x="-65552" y="-66580">
+		<location id="id68" x="-65586" y="-66580">
 			<urgent/>
 		</location>
 		<init ref="id40"/>
 		<transition>
 			<source ref="id68"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-65628" y="-66682">!isFull(id)</label>
-			<label kind="assignment" x="-65662" y="-66665">enqueue(id,ACK)</label>
-			<nail x="-65552" y="-66665"/>
-			<nail x="-66495" y="-66665"/>
+			<label kind="guard" x="-65654" y="-66682">!isFull()</label>
+			<label kind="assignment" x="-65696" y="-66665">enqueue(ACK),
+d1=0</label>
+			<nail x="-65586" y="-66665"/>
+			<nail x="-66453" y="-66665"/>
 		</transition>
 		<transition>
 			<source ref="id66"/>
 			<target ref="id68"/>
-			<label kind="guard" x="-65696" y="-66572">requester2offerer==nil</label>
-			<label kind="assignment" x="-65696" y="-66555">requester2offerer=ACK</label>
+			<label kind="guard" x="-65705" y="-66563">requester2offerer==nil</label>
+			<label kind="assignment" x="-65705" y="-66546">requester2offerer=ACK</label>
 		</transition>
 		<transition>
 			<source ref="id67"/>
 			<target ref="id40"/>
 			<label kind="guard" x="-65875" y="-66682">requester2offerer==ACK</label>
-			<label kind="assignment" x="-65858" y="-66665">requester2offerer=nil</label>
+			<label kind="assignment" x="-65858" y="-66665">requester2offerer=nil, 
+d1=0</label>
 			<nail x="-65713" y="-66665"/>
-			<nail x="-66495" y="-66665"/>
+			<nail x="-66453" y="-66665"/>
 		</transition>
 		<transition>
 			<source ref="id65"/>
 			<target ref="id67"/>
-			<label kind="guard" x="-65875" y="-66597">offerer2requester==nil</label>
-			<label kind="assignment" x="-65883" y="-66580">offerer2requester=OFFER</label>
+			<label kind="guard" x="-65892" y="-66597">offerer2requester==nil</label>
+			<label kind="assignment" x="-65900" y="-66580">offerer2requester=OFFER</label>
 		</transition>
 		<transition>
 			<source ref="id64"/>
 			<target ref="id66"/>
-			<label kind="guard" x="-65747" y="-66521">offerer2requester==OFFER</label>
-			<label kind="assignment" x="-65745" y="-66505">offerer2requester=nil</label>
+			<label kind="guard" x="-65790" y="-66521">offerer2requester==OFFER</label>
+			<label kind="assignment" x="-65790" y="-66504">offerer2requester=nil</label>
 		</transition>
 		<transition>
 			<source ref="id61"/>
 			<target ref="id65"/>
-			<label kind="guard" x="-66104" y="-66597">requester2offerer==REQUEST</label>
-			<label kind="assignment" x="-66104" y="-66580">requester2offerer=nil</label>
+			<label kind="guard" x="-66130" y="-66597">requester2offerer==REQUEST</label>
+			<label kind="assignment" x="-66130" y="-66580">requester2offerer=nil</label>
 		</transition>
 		<transition>
 			<source ref="id63"/>
 			<target ref="id64"/>
-			<label kind="guard" x="-65975" y="-66523">requester2offerer==nil</label>
-			<label kind="assignment" x="-65976" y="-66505">requester2offerer=REQUEST</label>
+			<label kind="guard" x="-66019" y="-66521">requester2offerer==nil</label>
+			<label kind="assignment" x="-66019" y="-66504">requester2offerer=REQUEST</label>
 		</transition>
 		<transition>
 			<source ref="id62"/>
 			<target ref="id63"/>
-			<label kind="guard" x="-66104" y="-66521">d1==PORT</label>
-			<label kind="assignment" x="-66104" y="-66504">d1=0</label>
+			<label kind="guard" x="-66138" y="-66521">d1==PORT</label>
 		</transition>
 		<transition>
 			<source ref="id59"/>
 			<target ref="id62"/>
-			<label kind="guard" x="-66283" y="-66521">!isEmpty(id)</label>
-			<label kind="assignment" x="-66282" y="-66504">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-66283" y="-66521">!isEmpty()</label>
+			<label kind="assignment" x="-66282" y="-66504">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id58"/>
 			<target ref="id61"/>
-			<label kind="guard" x="-66283" y="-66597">!isFull(id)</label>
-			<label kind="assignment" x="-66282" y="-66580">enqueue(id,PORT)</label>
+			<label kind="guard" x="-66283" y="-66597">!isFull()</label>
+			<label kind="assignment" x="-66282" y="-66580">enqueue(PORT)</label>
 		</transition>
 		<transition>
 			<source ref="id60"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-65756" y="-66810">d1==NOPAYLOAD &amp;&amp; !isFull(id)</label>
-			<label kind="assignment" x="-65739" y="-66793">enqueue(id,OFFER),d1=0</label>
-			<nail x="-65560" y="-66793"/>
-			<nail x="-66495" y="-66792"/>
+			<label kind="guard" x="-65798" y="-66810">d1==NOPAYLOAD &amp;&amp; !isFull()</label>
+			<label kind="assignment" x="-65781" y="-66793">enqueue(OFFER),d1=0</label>
+			<nail x="-65586" y="-66793"/>
+			<nail x="-66453" y="-66792"/>
 		</transition>
 		<transition>
 			<source ref="id57"/>
 			<target ref="id60"/>
-			<label kind="guard" x="-65705" y="-66750">!isEmpty(id)</label>
-			<label kind="assignment" x="-65705" y="-66733">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-65705" y="-66750">!isEmpty()</label>
+			<label kind="assignment" x="-65705" y="-66733">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id56"/>
 			<target ref="id59"/>
-			<label kind="guard" x="-66462" y="-66521">d1==ADDRESS</label>
+			<label kind="guard" x="-66428" y="-66521">d1==ADDRESS</label>
 			<nail x="-65900" y="-66623"/>
-			<nail x="-66470" y="-66623"/>
-			<nail x="-66470" y="-66504"/>
+			<nail x="-66453" y="-66623"/>
+			<nail x="-66453" y="-66504"/>
 		</transition>
 		<transition>
 			<source ref="id56"/>
 			<target ref="id58"/>
-			<label kind="guard" x="-66461" y="-66597">d1==TYPEMATCH</label>
+			<label kind="guard" x="-66436" y="-66597">d1==TYPEMATCH</label>
 			<nail x="-65900" y="-66623"/>
-			<nail x="-66470" y="-66623"/>
-			<nail x="-66470" y="-66580"/>
+			<nail x="-66453" y="-66623"/>
+			<nail x="-66453" y="-66580"/>
 		</transition>
 		<transition>
 			<source ref="id56"/>
@@ -857,43 +864,43 @@ int dequeueServ(int id)
 		<transition>
 			<source ref="id50"/>
 			<target ref="id56"/>
-			<label kind="guard" x="-66020" y="-66750">!isEmpty(id)</label>
-			<label kind="assignment" x="-66045" y="-66733">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-66020" y="-66750">!isEmpty()</label>
+			<label kind="assignment" x="-66045" y="-66733">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id55"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-65653" y="-66954">d1==OFFER</label>
-			<label kind="assignment" x="-65611" y="-66937">d1=0</label>
-			<nail x="-65560" y="-66937"/>
-			<nail x="-66495" y="-66937"/>
+			<label kind="guard" x="-65679" y="-66954">d1==OFFER</label>
+			<label kind="assignment" x="-65637" y="-66937">d1=0</label>
+			<nail x="-65586" y="-66937"/>
+			<nail x="-66453" y="-66937"/>
 		</transition>
 		<transition>
 			<source ref="id54"/>
 			<target ref="id55"/>
-			<label kind="guard" x="-65696" y="-66869">!isEmpty(id)</label>
-			<label kind="assignment" x="-65696" y="-66852">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-65705" y="-66869">!isEmpty()</label>
+			<label kind="assignment" x="-65705" y="-66852">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id51"/>
 			<target ref="id54"/>
-			<label kind="guard" x="-65875" y="-66869">d1==SKIP&amp;&amp;!isFull(id)</label>
-			<label kind="assignment" x="-65875" y="-66852">enqueue(id,REQUEST)</label>
+			<label kind="guard" x="-65892" y="-66869">d1==SKIP&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-65892" y="-66852">enqueue(REQUEST)</label>
 		</transition>
 		<transition>
 			<source ref="id51"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-66198" y="-66954">(d1==NOPAYLOAD||d1==REQUEST)&amp;&amp;!isFull(id)</label>
-			<label kind="assignment" x="-66062" y="-66937">enqueue(id,OFFER),d1=0</label>
-			<nail x="-65893" y="-66937"/>
-			<nail x="-66496" y="-66937"/>
+			<label kind="guard" x="-66232" y="-66954">(d1==NOPAYLOAD||d1==REQUEST)&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-66096" y="-66937">enqueue(OFFER),d1=0</label>
+			<nail x="-65909" y="-66936"/>
+			<nail x="-66454" y="-66937"/>
 		</transition>
 		<transition>
 			<source ref="id42"/>
 			<target ref="id53"/>
 			<label kind="guard" x="-66257" y="-67252">(d1!=choice || d2!=action)
-&amp;&amp;!isFull(id)</label>
-			<label kind="assignment" x="-66258" y="-67218">enqueue(id,ERROR),
+&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-66258" y="-67218">enqueue(ERROR),
 d1=0,d2=0</label>
 		</transition>
 		<transition>
@@ -905,8 +912,8 @@ d1=0,d2=0</label>
 		<transition>
 			<source ref="id49"/>
 			<target ref="id51"/>
-			<label kind="guard" x="-66028" y="-66869">!isEmpty(id)</label>
-			<label kind="assignment" x="-66029" y="-66852">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-66028" y="-66869">!isEmpty()</label>
+			<label kind="assignment" x="-66029" y="-66852">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id44"/>
@@ -922,22 +929,22 @@ d1=0,d2=0</label>
 		<transition>
 			<source ref="id48"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-65824" y="-67303">!isFull(id)&amp;&amp;d1==CHOICES</label>
-			<label kind="assignment" x="-65849" y="-67278">enqueue(id,SERVICE_CHOICE),
+			<label kind="guard" x="-65849" y="-67294">!isFull()&amp;&amp;d1==CHOICES</label>
+			<label kind="assignment" x="-65858" y="-67277">enqueue(SERVICE_CHOICE),
 d1=0</label>
-			<nail x="-65637" y="-67278"/>
-			<nail x="-66495" y="-67278"/>
+			<nail x="-65654" y="-67278"/>
+			<nail x="-66453" y="-67278"/>
 		</transition>
 		<transition>
 			<source ref="id47"/>
 			<target ref="id48"/>
-			<label kind="guard" x="-65637" y="-67209">!isEmpty(id)</label>
-			<label kind="assignment" x="-65637" y="-67192">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-65671" y="-67209">!isEmpty()</label>
+			<label kind="assignment" x="-65671" y="-67192">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id46"/>
 			<target ref="id47"/>
-			<label kind="guard" x="-65637" y="-67124">d1 == ORC_CHOICE</label>
+			<label kind="guard" x="-65696" y="-67124">d1 == ORC_CHOICE</label>
 		</transition>
 		<transition>
 			<source ref="id46"/>
@@ -945,13 +952,13 @@ d1=0</label>
 			<label kind="guard" x="-65867" y="-67175">d1==SKIP</label>
 			<label kind="assignment" x="-65858" y="-67158">d1=0</label>
 			<nail x="-65952" y="-67277"/>
-			<nail x="-66495" y="-67278"/>
+			<nail x="-66453" y="-67278"/>
 		</transition>
 		<transition>
 			<source ref="id45"/>
 			<target ref="id46"/>
-			<label kind="guard" x="-65773" y="-67073">!isEmpty(id)</label>
-			<label kind="assignment" x="-65773" y="-67056">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-65773" y="-67073">!isEmpty()</label>
+			<label kind="assignment" x="-65773" y="-67056">d1=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id43"/>
@@ -959,7 +966,7 @@ d1=0</label>
 			<label kind="guard" x="-66053" y="-67141">choice==
 DICTATORIAL_CHOICE</label>
 			<nail x="-66053" y="-67278"/>
-			<nail x="-66495" y="-67278"/>
+			<nail x="-66453" y="-67278"/>
 		</transition>
 		<transition>
 			<source ref="id43"/>
@@ -979,24 +986,26 @@ DICTATORIAL_CHOICE</label>
 		<transition>
 			<source ref="id42"/>
 			<target ref="id40"/>
-			<label kind="guard" x="-66487" y="-67226">d1==choice &amp;&amp; d2==action
-&amp;&amp; !isFull(id)</label>
-			<label kind="assignment" x="-66495" y="-67184">enqueue(id,ACK),d1=0,d2=0</label>
-			<nail x="-66495" y="-67184"/>
+			<label kind="guard" x="-66444" y="-67243">d1==choice 
+&amp;&amp; d2==action
+&amp;&amp; !isFull()</label>
+			<label kind="assignment" x="-66436" y="-67184">enqueue(ACK),
+d1=0,d2=0</label>
+			<nail x="-66453" y="-67184"/>
 		</transition>
 		<transition>
 			<source ref="id41"/>
 			<target ref="id42"/>
 			<label kind="guard" x="-66300" y="-67158">d1==ORC_CHECK&amp;&amp;
-!isEmpty(id)</label>
-			<label kind="assignment" x="-66300" y="-67124">d1=dequeueServ(id),
-d2=dequeueServ(id)</label>
+!isEmpty()</label>
+			<label kind="assignment" x="-66300" y="-67124">d1=dequeue(),
+d2=dequeue()</label>
 		</transition>
 		<transition>
 			<source ref="id40"/>
 			<target ref="id41"/>
-			<label kind="guard" x="-66444" y="-67082">!isEmpty(id)</label>
-			<label kind="assignment" x="-66453" y="-67056">d1=dequeueServ(id)</label>
+			<label kind="guard" x="-66393" y="-67073">!isEmpty()</label>
+			<label kind="assignment" x="-66444" y="-67056">d1=dequeue()</label>
 		</transition>
 	</template>
 	<system>// Place template instantiations here.
@@ -1004,35 +1013,21 @@ d2=dequeueServ(id)</label>
 ror = RunnableOrchestration(MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
 alice = RunnableOrchestratedContract(0,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
 bob = RunnableOrchestratedContract(1,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
-carl = RunnableOrchestratedContract(2,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
+carl = RunnableOrchestratedContract(2,DICTATORIAL_CHOICE,DISTRIBUTED_ACTION);
 
 // List one or more processes to be composed into a system.
 system ror,alice,bob,carl;
     </system>
 	<queries>
 		<query>
-			<formula>A[] (not deadlock || (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated))</formula>
-			<comment>no deadlocks</comment>
+			<formula>A[](!ror.Start)</formula>
+			<comment>Carl has a configuration different from the orchestrator and the other services. 
+The orchestration never starts.</comment>
 		</query>
 		<query>
-			<formula>A[]((ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated) imply allEmpty())</formula>
-			<comment>no orphan messages left</comment>
-		</query>
-		<query>
-			<formula>ror.Stop --&gt; (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated &amp;&amp; allEmpty())</formula>
-			<comment>if the orchestrator chooses to stop, the services will eventually terminate with no messages left</comment>
-		</query>
-		<query>
-			<formula>E[] allEmpty()</formula>
-			<comment>there exists an execution in which the services never interact</comment>
-		</query>
-		<query>
-			<formula>E[#&lt;=10; 10](max: sum(i:int[0,N-1]) (sum(j:int[0,queueSize-1])(orc2services[i][j]!=nil)))</formula>
-			<comment></comment>
-		</query>
-		<query>
-			<formula>simulate[#&lt;=50;1] {ror.Terminated}</formula>
-			<comment></comment>
+			<formula>A&lt;&gt; (ror.Error &amp;&amp; carl.Error)</formula>
+			<comment>Carl has a configuration different from the orchestrator and the other services. 
+In all executions, eventually an error state is reached.</comment>
 		</query>
 	</queries>
 </nta>
