@@ -1,7 +1,6 @@
-## Formal Model of the Contract Automata Runtime Environment in Uppaal
+## Formal Model of the Contract Automata Runtime Environment
 
-This folder contains three versions of the Uppaal model.
-It has been used the current last version of Uppal 4.1.26-1, February 2022.
+This folder contains three versions of the Uppaal model (version of Uppal 4.1.26-1, February 2022).
 
 The file `model.xml` is the version without delays, used for standard model checking.
 The file `model_configurable` is the version of the model where the configurations options are also parameters of the templates. 
