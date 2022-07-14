@@ -1,0 +1,1268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int queueSize=10;      //size of each buffer
+const int N = 3;            //three services
+const int pstop = 1;
+const int pchoice = 2;
+const int paction = 2;
+
+//actions and choics IDs
+const int DICTATORIAL_CHOICE = 1;
+const int MAJORITARIAN_CHOICE = 2; 
+const int CENTRALISED_ACTION = 3;
+const int DISTRIBUTED_ACTION = 4;
+
+int action;            //global action configuration
+int choice;            //global choice configuration
+
+typedef int[0,N] id_t; //all IDs
+
+//signals IDs
+const int ORC_CHECK=1;
+const int ORC_STOP=2;
+const int ORC_CHOICE=3;
+const int CHOICE_STOP=4;
+const int ACK=5;
+const int ERROR=6;
+const int SKIP=7;
+const int CHOICES=8;
+const int SERVICE_CHOICE=9;
+const int ACTION=10;
+const int REQUEST=11;
+const int OFFER=12;
+const int TYPEOFFER=13;
+const int TYPEMATCH=14;
+const int PORT=15;
+const int NOPAYLOAD=16;
+const int ADDRESS=17;
+
+
+//communication buffers
+int orc2services[N][queueSize];  
+int services2orc[N][queueSize];  
+int requester2offerer;
+int offerer2requester;
+
+const int nil = 0;	 //empty position in the buffer
+
+
+//return true if all buffers are empty
+bool allEmpty(){
+    int i=0;
+    int j=0;
+    for (i=0;i&lt;N;i++){
+        for (j=0;j&lt;queueSize;j++){
+            if (orc2services[i][j]!=nil || services2orc[i][j]!=nil)
+                return false;
+        }
+    }
+    return true;
+}
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">RunnableOrchestration</name>
+		<declaration>// Place local declarations here.
+int i=0;
+int d;
+int involved;
+int offerer;
+int requester;
+
+void initialize(int conf){
+    int i;
+    int id;
+    for (id:=0;id&lt;N;id++){
+        for (i:=0;i&lt;queueSize;i++)
+        {    
+            orc2services[id][i]:=nil;
+            services2orc[id][i]:=nil;
+        }
+    }
+    requester2offerer=nil;
+    offerer2requester=nil;
+
+    if (conf==0){
+        choice=DICTATORIAL_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==1){
+        choice=DICTATORIAL_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    } else if (conf==2){
+        choice=MAJORITARIAN_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==3){
+        choice=MAJORITARIAN_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    }
+}
+
+void enqueue(int id,int ide_sig)
+{
+    int i;
+    int s=ide_sig;
+    for (i:=0;i&lt;queueSize-1;i++)
+    {    
+        orc2services[id][i]:=orc2services[id][i+1]; //enqueue in the last position and shift down the other messages
+    }
+    orc2services[id][queueSize-1]:=s;
+}
+
+bool isEmpty(int id)
+{
+    return services2orc[id][queueSize-1]==nil; 
+}
+
+bool isFull(int id)
+{
+    return orc2services[id][0]!=nil; 
+}
+
+int available(int id)
+{
+  int count=0;
+  int i;
+  for (i:=0;i&lt;queueSize;i++)
+  {    
+    if (orc2services[id][i]==nil)
+        count++;
+  }
+  return count;
+}
+
+int dequeue(int id)
+{
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (services2orc[id][i]!=nil)
+        {
+			int e=services2orc[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			services2orc[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
+}</declaration>
+		<location id="id0" x="-68654" y="-68017">
+			<name x="-68713" y="-68051">CheckCompatibility</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="-68654" y="-68187">
+			<committed/>
+		</location>
+		<location id="id2" x="-68654" y="-67600">
+			<name x="-68646" y="-67634">Error</name>
+		</location>
+		<location id="id3" x="-68654" y="-67855">
+			<urgent/>
+		</location>
+		<location id="id4" x="-68654" y="-67745">
+			<urgent/>
+		</location>
+		<location id="id5" x="-67932" y="-68510">
+			<name x="-67942" y="-68544">Choice</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="-68306" y="-67575">
+			<name x="-68289" y="-67532">Action</name>
+			<committed/>
+		</location>
+		<location id="id7" x="-68399" y="-68017">
+			<name x="-68416" y="-68051">Start</name>
+			<urgent/>
+		</location>
+		<location id="id8" x="-67728" y="-68510">
+			<urgent/>
+		</location>
+		<location id="id9" x="-67881" y="-67575">
+			<urgent/>
+		</location>
+		<location id="id10" x="-68476" y="-67269">
+			<urgent/>
+		</location>
+		<location id="id11" x="-67549" y="-68144">
+			<name x="-67550" y="-68178">Stop</name>
+			<urgent/>
+		</location>
+		<location id="id12" x="-67337" y="-68144">
+			<name x="-67456" y="-68135">SendingTermination</name>
+			<urgent/>
+		</location>
+		<location id="id13" x="-67337" y="-68221">
+			<name x="-67320" y="-68229">Terminated</name>
+			<label kind="comments" x="-67448" y="-68297">RunnableOrchestration.java
+
+line 183</label>
+		</location>
+		<location id="id14" x="-67405" y="-68510">
+			<urgent/>
+		</location>
+		<location id="id15" x="-67150" y="-68510">
+			<urgent/>
+		</location>
+		<location id="id16" x="-68306" y="-67957">
+			<urgent/>
+		</location>
+		<location id="id17" x="-68051" y="-68510">
+			<urgent/>
+		</location>
+		<location id="id18" x="-67583" y="-67575">
+			<name x="-67626" y="-67609">CentralisedOffer</name>
+			<urgent/>
+		</location>
+		<location id="id19" x="-67719" y="-67294">
+			<name x="-67778" y="-67328">CentralisedMatch</name>
+			<urgent/>
+		</location>
+		<location id="id20" x="-67209" y="-67575">
+			<urgent/>
+		</location>
+		<location id="id21" x="-67285" y="-67296">
+			<urgent/>
+		</location>
+		<location id="id22" x="-67005" y="-67294">
+			<urgent/>
+		</location>
+		<location id="id23" x="-66682" y="-67294">
+			<urgent/>
+		</location>
+		<location id="id24" x="-66690" y="-68017">
+			<urgent/>
+		</location>
+		<location id="id25" x="-68476" y="-66946">
+			<urgent/>
+		</location>
+		<location id="id26" x="-68187" y="-67124">
+			<name x="-68204" y="-67149">DistributedOffer</name>
+			<urgent/>
+		</location>
+		<location id="id27" x="-68034" y="-66946">
+			<name x="-68093" y="-66988">DistributedMatch</name>
+			<urgent/>
+		</location>
+		<location id="id28" x="-67753" y="-67124">
+			<urgent/>
+		</location>
+		<location id="id29" x="-67711" y="-66946">
+			<urgent/>
+		</location>
+		<location id="id30" x="-67379" y="-66946">
+			<urgent/>
+		</location>
+		<location id="id31" x="-66946" y="-66946">
+			<urgent/>
+		</location>
+		<location id="id32" x="-66657" y="-66946">
+			<urgent/>
+		</location>
+		<location id="id33" x="-66657" y="-67201">
+			<urgent/>
+		</location>
+		<location id="id34" x="-67150" y="-68382">
+			<urgent/>
+		</location>
+		<location id="id35" x="-67209" y="-67770">
+			<urgent/>
+		</location>
+		<branchpoint id="id36" x="-68382" y="-66946">
+		</branchpoint>
+		<branchpoint id="id37" x="-67838" y="-67575">
+		</branchpoint>
+		<branchpoint id="id38" x="-68306" y="-67906">
+		</branchpoint>
+		<branchpoint id="id39" x="-68127" y="-68144">
+		</branchpoint>
+		<init ref="id1"/>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-67286" y="-67940">d==OFFER</label>
+			<label kind="assignment" x="-67243" y="-67906">d=0</label>
+			<label kind="comments" x="-67311" y="-67864">RunnableOrchestration.java
+
+line 203</label>
+			<nail x="-67209" y="-68017"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-67260" y="-67745">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67286" y="-67728">d=dequeue(offerer),
+offerer=0</label>
+			<label kind="comments" x="-67277" y="-67677">CentralisedOrchestratorAction.java
+
+line 62</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-67311" y="-68382">d==SERVICE_CHOICE</label>
+			<label kind="assignment" x="-67218" y="-68365">d=0,i++</label>
+			<nail x="-67286" y="-68382"/>
+			<nail x="-67286" y="-68476"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-67218" y="-68476">i&lt;involved&amp;&amp;
+!isEmpty(i)</label>
+			<label kind="assignment" x="-67235" y="-68433">d=dequeue(i)</label>
+			<label kind="comments" x="-67141" y="-68467">MajoritarianChoiceRunnableOrchestration.java
+
+line 85</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-66767" y="-67226">d==ACK</label>
+			<label kind="assignment" x="-66759" y="-67201">d=0</label>
+			<label kind="comments" x="-67022" y="-67226">RunnableOrchestration.java
+line 203</label>
+			<nail x="-68399" y="-67201"/>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-66784" y="-67099">!isEmpty(requester)</label>
+			<label kind="assignment" x="-66801" y="-67082">d=dequeue(requester),
+requester=0</label>
+			<label kind="comments" x="-66784" y="-67048">DistributedOrchestratorAction.java
+
+line 57</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id32"/>
+			<label kind="guard" x="-66929" y="-66980">available(requester)&gt;=2
+&amp;&amp;d==PORT</label>
+			<label kind="assignment" x="-66937" y="-66938">enqueue(requester,ADDRESS),
+enqueue(requester,PORT),
+d=0,offerer=0</label>
+			<label kind="comments" x="-66929" y="-66878">DistributedOrchestratorAction.java
+
+lines 51-54</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-67362" y="-66963">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67362" y="-66946">d=dequeue(offerer)</label>
+			<label kind="comments" x="-67361" y="-66921">DistributedOrchestratorAction.java
+
+line 48</label>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-67669" y="-66963">!isFull(offerer)</label>
+			<label kind="assignment" x="-67695" y="-66945">enqueue(offerer,TYPEMATCH)</label>
+			<label kind="comments" x="-67693" y="-66921">DistributedOrchestratorAction.java
+
+lines 44-45</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-68000" y="-66963">!isFull(requester)</label>
+			<label kind="assignment" x="-68018" y="-66945">enqueue(requester,ACTION)</label>
+			<label kind="comments" x="-68016" y="-66921">DistributedOrchestratorAction.java
+
+lines 40-41</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-67702" y="-67141">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-67702" y="-67124">d=dequeue(offerer),d=0,
+offerer=0</label>
+			<label kind="comments" x="-67609" y="-67107">DistributedOrchestratorAction.java
+line 68
+
+RunnableOrchestration.java
+line 203</label>
+			<nail x="-67388" y="-67124"/>
+			<nail x="-67388" y="-67201"/>
+			<nail x="-68399" y="-67201"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-68085" y="-67149">available(offerer)&gt;=2</label>
+			<label kind="assignment" x="-68136" y="-67124">enqueue(offerer,TYPEOFFER),
+enqueue(offerer,NOPAYLOAD)</label>
+			<label kind="comments" x="-67957" y="-67107">DistributedOrchestratorAction.java
+
+lines 62-67</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id27"/>
+			<label kind="probability" x="-68365" y="-66964">1</label>
+			<label kind="comments" x="-68314" y="-66937">DistributedOrchestratorAction.java
+
+line 37</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id26"/>
+			<label kind="probability" x="-68382" y="-66989">1</label>
+			<label kind="comments" x="-68416" y="-67116">DistributedOrchestratorAction.java
+
+line 60</label>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id36"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id25"/>
+			<label kind="select" x="-68544" y="-67032">n:int[0,N-2]</label>
+			<label kind="guard" x="-68535" y="-67015">!isFull(n)</label>
+			<label kind="assignment" x="-68586" y="-67006">offerer=n,
+requester=n+1,
+enqueue(offerer,
+        ACTION)</label>
+			<label kind="comments" x="-68663" y="-67176">DistributedOrchestratorAction.java
+
+lines 34-35</label>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-66920" y="-68042">!isFull(requester)&amp;&amp;d==OFFER</label>
+			<label kind="assignment" x="-66903" y="-68017">enqueue(requester,OFFER),
+requester=0,d=0</label>
+			<label kind="comments" x="-67099" y="-68059">CentralisedOrchestratorAction.java
+line 52-53
+
+RunnableOrchestration.java
+line 203</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="guard" x="-66792" y="-67787">!isEmpty(offerer)</label>
+			<label kind="assignment" x="-66792" y="-67770">d=dequeue(offerer),
+offerer=0</label>
+			<label kind="comments" x="-66852" y="-67677">CentralisedOrchestratorAction.java
+
+line 49</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id23"/>
+			<label kind="guard" x="-66971" y="-67337">available(offerer)&gt;=2
+&amp;&amp;d==REQUEST</label>
+			<label kind="assignment" x="-66988" y="-67293">enqueue(offerer,ACTION),
+enqueue(offerer,REQUEST)</label>
+			<label kind="comments" x="-66963" y="-67396">CentralisedOrchestratorAction.java
+
+lines 44-47</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id22"/>
+			<label kind="guard" x="-67269" y="-67321">!isEmpty(requester)</label>
+			<label kind="assignment" x="-67267" y="-67296">d=dequeue(requester)</label>
+			<label kind="comments" x="-67269" y="-67379">CentralisedOrchestratorAction.java
+
+line 41</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id21"/>
+			<label kind="select" x="-67438" y="-67338">n:int[0,N-2]</label>
+			<label kind="guard" x="-67438" y="-67321">available(n)&gt;=2</label>
+			<label kind="assignment" x="-67480" y="-67296">requester=n,offerer=n+1,
+enqueue(requester,ACTION),
+enqueue(requester,SKIP)</label>
+			<label kind="comments" x="-67685" y="-67320">CentralisedOrchestratorAction.java
+
+lines 36-39</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id20"/>
+			<label kind="select" x="-67515" y="-67609">n:int[0,N-1]</label>
+			<label kind="guard" x="-67548" y="-67592">available(n)&gt;=2</label>
+			<label kind="assignment" x="-67557" y="-67575">offerer=n,
+enqueue(offerer,ACTION),
+enqueue(offerer,NOPAYLOAD)</label>
+			<label kind="comments" x="-67566" y="-67515">CentralisedOrchestratorAction.java
+
+lines 58-61</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id19"/>
+			<label kind="probability" x="-67821" y="-67311">1</label>
+			<label kind="comments" x="-67932" y="-67447">CentralisedOrchestratorAction.java
+
+lines 33-34</label>
+			<nail x="-67838" y="-67294"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id18"/>
+			<label kind="probability" x="-67821" y="-67592">1</label>
+			<label kind="comments" x="-67855" y="-67643">CentralisedOrchestratorAction.java
+
+lines 56-57</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id37"/>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-68093" y="-68476">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-68093" y="-68459">enqueue(i,ORC_CHOICE),i++</label>
+			<label kind="comments" x="-68110" y="-68442">RunnableOrchestration.java
+
+line 165-166</label>
+			<nail x="-68059" y="-68476"/>
+			<nail x="-68034" y="-68476"/>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-68034" y="-68527">i==N</label>
+			<label kind="assignment" x="-68033" y="-68510">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id17"/>
+			<label kind="probability" x="-68161" y="-68212">pchoice</label>
+			<label kind="comments" x="-68255" y="-68306">RunnableOrchestration.java
+
+line 161-163</label>
+			<nail x="-68127" y="-68510"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-68255" y="-68850">i==involved</label>
+			<label kind="assignment" x="-68170" y="-68850">i=0,involved=0</label>
+			<label kind="comments" x="-68255" y="-68833">MajoritarianChoiceRunnableOrchestration.java
+
+lines 87-90</label>
+			<nail x="-67150" y="-68833"/>
+			<nail x="-68306" y="-68833"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id6"/>
+			<label kind="probability" x="-68306" y="-67898">paction</label>
+			<label kind="comments" x="-68340" y="-67711">RunnableOrchestration.java
+
+line 201</label>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id11"/>
+			<label kind="probability" x="-68280" y="-67932">pstop</label>
+			<label kind="comments" x="-67753" y="-67932">RunnableOrchestration.java
+
+line 176</label>
+			<nail x="-67549" y="-67906"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id38"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-68221" y="-68654">choice==DICTATORIAL_CHOICE</label>
+			<label kind="comments" x="-68238" y="-68705">DictatorialChoiceRunnableOrchestration.java
+
+lines 54-68</label>
+			<nail x="-67932" y="-68629"/>
+			<nail x="-68306" y="-68629"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-67252" y="-68527">i==involved</label>
+			<label kind="assignment" x="-67252" y="-68510">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-67430" y="-68666">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67430" y="-68649">enqueue(i,CHOICES),
+i++</label>
+			<label kind="comments" x="-67473" y="-68722">MajoritarianChoiceRunnableOrchestration.java
+
+lines 78-79</label>
+			<nail x="-67404" y="-68628"/>
+			<nail x="-67345" y="-68629"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-67652" y="-68527">i==N</label>
+			<label kind="assignment" x="-67651" y="-68510">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-67778" y="-68442">i&gt;=involved &amp;&amp; i&lt;N &amp;&amp;!isFull(i)</label>
+			<label kind="assignment" x="-67728" y="-68425">enqueue(i,SKIP),
+i++</label>
+			<label kind="comments" x="-67813" y="-68391">MajoritarianChoiceRunnableOrchestration.java
+
+lines 68-69</label>
+			<nail x="-67728" y="-68442"/>
+			<nail x="-67685" y="-68442"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-67363" y="-68186">i==N</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-67277" y="-68152">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67286" y="-68135">enqueue(i,ORC_STOP),
+i++</label>
+			<label kind="comments" x="-67158" y="-68153">RunnableOrchestration.java
+
+lines 181-182</label>
+			<nail x="-67286" y="-68144"/>
+			<nail x="-67286" y="-68101"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-67779" y="-68666">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="assignment" x="-67779" y="-68649">enqueue(i,ORC_CHOICE),
+i++</label>
+			<label kind="comments" x="-67830" y="-68731">MajoritarianChoiceRunnableOrchestration.java
+
+lines 68-69</label>
+			<nail x="-67728" y="-68629"/>
+			<nail x="-67685" y="-68629"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="assignment" x="-67531" y="-68144">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id11"/>
+			<label kind="probability" x="-68110" y="-68170">pstop</label>
+			<label kind="comments" x="-67830" y="-68170">RunnableOrchestration.java
+
+line 176</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-68595" y="-67321">action==
+DISTRIBUTED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-68085" y="-67600">action==
+CENTRALISED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id8"/>
+			<label kind="select" x="-67898" y="-68527">n:int[1,N]</label>
+			<label kind="guard" x="-67906" y="-68510">choice==
+MAJORITARIAN_CHOICE</label>
+			<label kind="assignment" x="-67881" y="-68476">involved=n</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-68612" y="-68034">i==N</label>
+			<label kind="assignment" x="-68586" y="-68017">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id39"/>
+			<nail x="-68399" y="-68144"/>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id6"/>
+			<label kind="probability" x="-68153" y="-68127">paction</label>
+			<label kind="comments" x="-68161" y="-68102">RunnableOrchestration.java
+
+line 201</label>
+			<nail x="-68119" y="-67634"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-68654" y="-67677">d==ERROR</label>
+			<label kind="comments" x="-68832" y="-67694">RunnableOrchestration.java
+
+lines 235-236</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-68637" y="-67762">d==ACK</label>
+			<label kind="assignment" x="-68637" y="-67745">i++,d=0</label>
+			<label kind="comments" x="-68603" y="-67838">RunnableOrchestration.java
+line 235</label>
+			<nail x="-68509" y="-67744"/>
+			<nail x="-68509" y="-67974"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-68688" y="-67821">!isEmpty(i)</label>
+			<label kind="assignment" x="-68696" y="-67804">d=dequeue(i)</label>
+			<label kind="comments" x="-68807" y="-67838">RunnableOrchestration.java
+line 234</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-68713" y="-67957">i&lt;N &amp;&amp; available(i)&gt;=3</label>
+			<label kind="assignment" x="-68722" y="-67940">enqueue(i,ORC_CHECK), 
+enqueue(i,choice),
+enqueue(i,action)</label>
+			<label kind="comments" x="-68832" y="-67991">RunnableOrchestration.java 
+lines 230-232</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="select" x="-68654" y="-68101">conf:int[0,3]</label>
+			<label kind="assignment" x="-68654" y="-68084">initialize(conf),i=0</label>
+		</transition>
+	</template>
+	<template>
+		<name>RunnableOrchestratedContract</name>
+		<parameter>const id_t id</parameter>
+		<declaration>int d1;
+int d2;
+int address;
+
+
+void enqueue(int ide_sig)
+{
+    int i;
+    int s=ide_sig;
+    for (i:=0;i&lt;queueSize-1;i++)
+    {    
+        services2orc[id][i]:=services2orc[id][i+1]; //enqueue in the last position and shift down the other messages
+    }
+    services2orc[id][queueSize-1]:=s;
+
+}
+
+bool isEmpty()
+{
+    return orc2services[id][queueSize-1]==nil;
+}
+
+bool isFull()
+{
+    return services2orc[id][0]!=nil; 
+}
+
+int available()
+{
+  int count=0;
+  int i;
+  for (i:=0;i&lt;queueSize;i++)
+  {    
+    if (services2orc[id][i]==nil)
+        count++;
+  }
+  return count;
+}
+
+int dequeue()
+{
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (orc2services[id][i]!=nil)
+        {
+			int e=orc2services[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			orc2services[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
+}</declaration>
+		<location id="id40" x="-66453" y="-67056">
+			<name x="-66470" y="-67090">Ready</name>
+			<urgent/>
+		</location>
+		<location id="id41" x="-66164" y="-67056">
+			<urgent/>
+		</location>
+		<location id="id42" x="-66164" y="-67362">
+			<urgent/>
+		</location>
+		<location id="id43" x="-65764" y="-67056">
+			<committed/>
+		</location>
+		<location id="id44" x="-66163" y="-66521">
+			<committed/>
+		</location>
+		<location id="id45" x="-65373" y="-67056">
+			<urgent/>
+		</location>
+		<location id="id46" x="-65084" y="-67056">
+			<committed/>
+		</location>
+		<location id="id47" x="-65084" y="-67226">
+			<urgent/>
+		</location>
+		<location id="id48" x="-65084" y="-67439">
+			<urgent/>
+		</location>
+		<location id="id49" x="-65883" y="-66521">
+			<urgent/>
+		</location>
+		<location id="id50" x="-65926" y="-66274">
+			<urgent/>
+		</location>
+		<location id="id51" x="-65450" y="-66521">
+			<urgent/>
+		</location>
+		<location id="id52" x="-65917" y="-66852">
+			<name x="-65908" y="-66877">Terminated</name>
+		</location>
+		<location id="id53" x="-65807" y="-67362">
+			<name x="-65817" y="-67396">Error</name>
+		</location>
+		<location id="id54" x="-65144" y="-66521">
+			<urgent/>
+		</location>
+		<location id="id55" x="-64855" y="-66521">
+			<committed/>
+		</location>
+		<location id="id56" x="-65603" y="-66274">
+			<committed/>
+		</location>
+		<location id="id57" x="-65247" y="-66274">
+			<urgent/>
+		</location>
+		<location id="id58" x="-66053" y="-65909">
+			<urgent/>
+		</location>
+		<location id="id59" x="-66164" y="-65739">
+			<urgent/>
+		</location>
+		<location id="id60" x="-64889" y="-66274">
+			<urgent/>
+		</location>
+		<location id="id61" x="-65790" y="-65909">
+			<urgent/>
+		</location>
+		<location id="id62" x="-65883" y="-65739">
+			<committed/>
+		</location>
+		<location id="id63" x="-65628" y="-65739">
+			<urgent/>
+		</location>
+		<location id="id64" x="-65254" y="-65739">
+			<urgent/>
+		</location>
+		<location id="id65" x="-65518" y="-65909">
+			<urgent/>
+		</location>
+		<location id="id66" x="-64880" y="-65739">
+			<urgent/>
+		</location>
+		<location id="id67" x="-65254" y="-65909">
+			<name x="-65264" y="-65943">Done</name>
+			<urgent/>
+		</location>
+		<location id="id68" x="-64880" y="-65986">
+			<urgent/>
+		</location>
+		<init ref="id40"/>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65127" y="-66104">!isFull()</label>
+			<label kind="assignment" x="-65118" y="-66079">enqueue(ACK),
+d1=0</label>
+			<label kind="comments" x="-65067" y="-66138">DistributedOrchestratedAction.java
+
+line 98-99</label>
+			<nail x="-64948" y="-66079"/>
+			<nail x="-66453" y="-66079"/>
+		</transition>
+		<transition>
+			<source ref="id66"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-64999" y="-65969">requester2offerer==nil</label>
+			<label kind="assignment" x="-64999" y="-65952">requester2offerer=ACK</label>
+			<label kind="comments" x="-65042" y="-65909">DistributedOrchestratedAction.java
+
+line 95</label>
+		</transition>
+		<transition>
+			<source ref="id67"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65313" y="-66011">requester2offerer==ACK</label>
+			<label kind="assignment" x="-65314" y="-65994">requester2offerer=nil,d1=0</label>
+			<label kind="comments" x="-65484" y="-66036">DistributedOrchestratedAction.java
+
+line 62</label>
+			<nail x="-65254" y="-66079"/>
+			<nail x="-66453" y="-66079"/>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id67"/>
+			<label kind="guard" x="-65450" y="-65934">offerer2requester==nil</label>
+			<label kind="assignment" x="-65475" y="-65909">offerer2requester=OFFER</label>
+			<label kind="comments" x="-65500" y="-65884">DistributedOrchestratedAction.java
+
+line 58</label>
+		</transition>
+		<transition>
+			<source ref="id64"/>
+			<target ref="id66"/>
+			<label kind="guard" x="-65237" y="-65756">offerer2requester==OFFER</label>
+			<label kind="assignment" x="-65237" y="-65739">offerer2requester=nil</label>
+			<label kind="comments" x="-65236" y="-65714">DistributedOrchestratedAction.java
+
+line 92</label>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id65"/>
+			<label kind="guard" x="-65773" y="-65926">requester2offerer==REQUEST</label>
+			<label kind="assignment" x="-65773" y="-65909">requester2offerer=nil</label>
+			<label kind="comments" x="-65772" y="-65884">DistributedOrchestratedAction.java
+
+line 55</label>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id64"/>
+			<label kind="guard" x="-65611" y="-65756">requester2offerer==nil</label>
+			<label kind="assignment" x="-65611" y="-65739">requester2offerer=REQUEST</label>
+			<label kind="comments" x="-65610" y="-65714">DistributedOrchestratedAction.java
+
+line 89</label>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id63"/>
+			<label kind="guard" x="-65866" y="-65756">d1==PORT</label>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id62"/>
+			<label kind="guard" x="-66147" y="-65756">!isEmpty()</label>
+			<label kind="assignment" x="-66146" y="-65739">d1=dequeue()</label>
+			<label kind="comments" x="-66146" y="-65714">DistributedOrchestratedAction.java
+
+line 81</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id61"/>
+			<label kind="guard" x="-66036" y="-65926">!isFull()</label>
+			<label kind="assignment" x="-66035" y="-65909">enqueue(PORT)</label>
+			<label kind="comments" x="-66035" y="-65884">DistributedOrchestratedAction.java
+
+line 46</label>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65322" y="-66393">d1==NOPAYLOAD &amp;&amp; !isFull()</label>
+			<label kind="assignment" x="-65305" y="-66376">enqueue(OFFER),d1=0</label>
+			<label kind="comments" x="-65577" y="-66410">DistributedOrchestratedAction.java
+
+lines 73-74</label>
+			<nail x="-64889" y="-66376"/>
+			<nail x="-66454" y="-66375"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id60"/>
+			<label kind="guard" x="-65229" y="-66291">!isEmpty()</label>
+			<label kind="assignment" x="-65229" y="-66274">d1=dequeue()</label>
+			<label kind="comments" x="-65229" y="-66249">DistributedOrchestratedAction.java
+
+line 72</label>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id59"/>
+			<label kind="guard" x="-66292" y="-65756">d1==ADDRESS</label>
+			<label kind="comments" x="-66419" y="-65739">DistributedOrchestratedAction.java
+
+line 80</label>
+			<nail x="-65653" y="-66037"/>
+			<nail x="-66317" y="-66037"/>
+			<nail x="-66317" y="-65739"/>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id58"/>
+			<label kind="guard" x="-66300" y="-65926">d1==TYPEMATCH</label>
+			<label kind="comments" x="-66308" y="-65900">DistributedOrchestratedAction.java
+
+line 40</label>
+			<nail x="-65653" y="-66037"/>
+			<nail x="-66317" y="-66037"/>
+			<nail x="-66317" y="-65909"/>
+		</transition>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id57"/>
+			<label kind="guard" x="-65580" y="-66290">d1==TYPEOFFER</label>
+			<label kind="comments" x="-65586" y="-66257">DistributedOrchestratedAction.java
+
+line 40</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id56"/>
+			<label kind="guard" x="-65884" y="-66291">!isEmpty()</label>
+			<label kind="assignment" x="-65909" y="-66274">d1=dequeue()</label>
+			<label kind="comments" x="-65908" y="-66249">DistributedOrchestratedAction.java
+
+lines 40,72,80</label>
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-64950" y="-66691">d1==OFFER</label>
+			<label kind="assignment" x="-64908" y="-66674">d1=0</label>
+			<nail x="-64857" y="-66674"/>
+			<nail x="-66455" y="-66674"/>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id55"/>
+			<label kind="guard" x="-64974" y="-66538">!isEmpty()</label>
+			<label kind="assignment" x="-64974" y="-66521">d1=dequeue()</label>
+			<label kind="comments" x="-65126" y="-66496">CentralisedOrchestratedAction.java
+
+line 34</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id54"/>
+			<label kind="guard" x="-65433" y="-66538">d1==SKIP&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-65433" y="-66521">enqueue(REQUEST)</label>
+			<label kind="comments" x="-65433" y="-66495">CentralisedOrchestratedAction.java
+
+line 29</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65943" y="-66691">(d1==NOPAYLOAD||d1==REQUEST)&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-65807" y="-66674">enqueue(OFFER),d1=0</label>
+			<label kind="comments" x="-65790" y="-66657">CentralisedOrchestratedAction.java
+
+line 29</label>
+			<nail x="-65452" y="-66673"/>
+			<nail x="-66456" y="-66674"/>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id53"/>
+			<label kind="guard" x="-66120" y="-67430">(d1!=choice || d2!=action)
+&amp;&amp;!isFull()</label>
+			<label kind="assignment" x="-66121" y="-67396">enqueue(ERROR),
+d1=0,d2=0</label>
+			<label kind="comments" x="-66130" y="-67354">RunnableOrchestratedContract.java
+
+line 183</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id52"/>
+			<label kind="guard" x="-66087" y="-66869">d1==ORC_STOP</label>
+			<label kind="comments" x="-66070" y="-66835">RunnableOrchestratedContract.java
+
+line 106</label>
+			<nail x="-66164" y="-66852"/>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id51"/>
+			<label kind="guard" x="-65864" y="-66538">!isEmpty()</label>
+			<label kind="assignment" x="-65865" y="-66521">d1=dequeue()</label>
+			<label kind="comments" x="-65865" y="-66496">CentralisedOrchestratedAction.java
+
+line 28</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-66153" y="-66293">action==DISTRIBUTED_ACTION</label>
+			<nail x="-66164" y="-66274"/>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id49"/>
+			<label kind="guard" x="-66147" y="-66538">action==CENTRALISED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65432" y="-67548">!isFull()&amp;&amp;d1==CHOICES</label>
+			<label kind="assignment" x="-65433" y="-67532">enqueue(SERVICE_CHOICE),
+d1=0</label>
+			<label kind="comments" x="-65594" y="-67609">MajoritarianChoiceRunnableOrchestratedContract.java
+
+lines 54-55</label>
+			<nail x="-65084" y="-67532"/>
+			<nail x="-66453" y="-67532"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id48"/>
+			<label kind="guard" x="-65101" y="-67389">!isEmpty()</label>
+			<label kind="assignment" x="-65101" y="-67372">d1=dequeue()</label>
+			<label kind="comments" x="-65220" y="-67320">MajoritarianChoiceRunnableOrchestratedContract.java
+
+line 49</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id47"/>
+			<label kind="guard" x="-65126" y="-67124">d1 == ORC_CHOICE</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65322" y="-67201">d1==SKIP</label>
+			<label kind="assignment" x="-65288" y="-67192">d1=0</label>
+			<label kind="comments" x="-65628" y="-67379">MajoritarianChoiceRunnableOrchestratedContract.java
+
+lines 45-46</label>
+			<nail x="-65663" y="-67531"/>
+			<nail x="-66453" y="-67532"/>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id46"/>
+			<label kind="guard" x="-65356" y="-67073">!isEmpty()</label>
+			<label kind="assignment" x="-65356" y="-67056">d1=dequeue()</label>
+			<label kind="comments" x="-65355" y="-67031">MajoritarianChoiceRunnableOrchestratedContract.java
+
+line 41</label>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-65764" y="-67141">choice==
+DICTATORIAL_CHOICE</label>
+			<label kind="comments" x="-65883" y="-67235">DictatorialChoiceRunnableOrchestratedContract.java
+
+line 24</label>
+			<nail x="-65764" y="-67532"/>
+			<nail x="-66453" y="-67532"/>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id45"/>
+			<label kind="guard" x="-65747" y="-67073">choice==MAJORITARIAN_CHOICE</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66249" y="-66563">d1==ACTION</label>
+			<label kind="comments" x="-66325" y="-66631">RunnableOrchestratedContract.java
+
+line 133</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id43"/>
+			<label kind="guard" x="-66095" y="-67073">d1==ORC_CHOICE</label>
+			<label kind="comments" x="-66087" y="-67048">RunnableOrchestratedContract.java
+
+line 114</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id40"/>
+			<label kind="guard" x="-66444" y="-67421">d1==choice 
+&amp;&amp; d2==action
+&amp;&amp; !isFull()</label>
+			<label kind="assignment" x="-66436" y="-67362">enqueue(ACK),
+d1=0,d2=0</label>
+			<label kind="comments" x="-66444" y="-67320">RunnableOrchestratedContract.java
+
+line 179</label>
+			<nail x="-66453" y="-67362"/>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id42"/>
+			<label kind="guard" x="-66163" y="-67251">d1==ORC_CHECK&amp;&amp;
+!isEmpty()</label>
+			<label kind="assignment" x="-66163" y="-67217">d1=dequeue(),
+d2=dequeue()</label>
+			<label kind="comments" x="-66164" y="-67175">RunnableOrchestratedContract.java
+
+lines 102, 175,176</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id41"/>
+			<label kind="guard" x="-66419" y="-67073">!isEmpty()</label>
+			<label kind="assignment" x="-66444" y="-67056">d1=dequeue()</label>
+			<label kind="comments" x="-66435" y="-67031">RunnableOrchestratedContract.java
+
+line 98</label>
+		</transition>
+	</template>
+	<system>ror = RunnableOrchestration();
+alice = RunnableOrchestratedContract(0);
+bob = RunnableOrchestratedContract(1);
+carl = RunnableOrchestratedContract(2);
+
+system ror,alice,bob,carl;
+    </system>
+	<queries>
+		<query>
+			<formula>A[](not deadlock || (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated))</formula>
+			<comment>no deadlocks</comment>
+		</query>
+		<query>
+			<formula>A[]((ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated) imply allEmpty())</formula>
+			<comment>no orphan messages left</comment>
+		</query>
+		<query>
+			<formula>ror.Stop --&gt; (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated &amp;&amp; allEmpty())</formula>
+			<comment>if the orchestrator chooses to stop, the services will eventually terminate with no messages left</comment>
+		</query>
+		<query>
+			<formula>E[] allEmpty()</formula>
+			<comment>there exists an execution in which the services never interact. 
+This property does not hold, there is no such dummy execution.</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt;((alice.d1==TYPEMATCH || alice.d1==ADDRESS || alice.d1==PORT)&amp;&amp; 
+(bob.d1==TYPEMATCH || bob.d1==ADDRESS || bob.d1==PORT)&amp;&amp; 
+(carl.d1==TYPEMATCH || carl.d1==ADDRESS || carl.d1==PORT) 
+ &amp;&amp; !alice.Done &amp;&amp; !bob.Done &amp;&amp; !carl.Done)</formula>
+			<comment>no interference in a match between two services</comment>
+		</query>
+	</queries>
+</nta>
