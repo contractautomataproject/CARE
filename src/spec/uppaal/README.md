@@ -2,7 +2,7 @@
 
 This folder contains three versions of the Uppaal model (version of Uppal 4.1.26-1, February 2022).
 
-The file `model.xml` is the base version of the model,  without delays and used for standard model checking. 
+The file `model.xml` is the base version of the model,  without delays and used for exhaustive model checking. 
 All other models are variations of this base version. 
 In  `model_configurable`  the configuration options are also parameters of the templates. 
 In `model_realtime`  each location has  delays that are exponentially distributed, and this model is used for statistical model checking. 
