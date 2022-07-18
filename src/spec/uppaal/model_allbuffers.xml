@@ -3,7 +3,7 @@
 <nta>
 	<declaration>// Place global declarations here.
 const int queueSize=10;      //size of each buffer
-const int N = 4;            //number of services
+const int N = 3;            //number of services
 const int pstop = 1;
 const int pchoice = 2;
 const int paction = 2;
