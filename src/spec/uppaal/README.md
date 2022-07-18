@@ -5,6 +5,7 @@ This folder contains three versions of the Uppaal model (version of Uppal 4.1.26
 The file `model.xml` is the version without delays, used for standard model checking.
 The file `model_configurable` is the version of the model where the configuration options are also parameters of the templates. 
 The file `model_realtime` is the version of the model where in each location delays are exponentially distributed and is used for statistical model checking. 
+The file `model_allbuffers` is the version of the model where each pair of services has its own buffers for communicating.
 
 It is also included a version `model_traceability.xml` that is the same as `model.xml` but  each transition is traced back to the corresponding source code instructions.
 In this case the used source code version is b1a6954, navigable here https://github.com/contractautomataproject/CARE/tree/b1a695469fbb5a4d212a96dd95bffa0ed39b71b8. 
