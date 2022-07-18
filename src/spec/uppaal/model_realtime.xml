@@ -3,7 +3,7 @@
 <nta>
 	<declaration>// Place global declarations here.
 const int queueSize=10;      //size of each buffer
-const int N = 3;            //three services
+const int N = 3;            //number of services
 
 
 //probabilities and exponential distriubtion rate
@@ -21,7 +21,7 @@ const int DISTRIBUTED_ACTION = 4;
 int action;            //global action configuration
 int choice;            //global choice configuration
 
-typedef int[0,N] id_t; //all IDs
+typedef int[0,N-1] id_t; //all IDs
 
 //signals IDs
 const int ORC_CHECK=1;
@@ -1031,15 +1031,12 @@ d2=dequeue()</label>
 		</transition>
 	</template>
 	<system>ror = RunnableOrchestration();
-alice = RunnableOrchestratedContract(0);
-bob = RunnableOrchestratedContract(1);
-carl = RunnableOrchestratedContract(2);
 
-system ror,alice,bob,carl;
+system ror,RunnableOrchestratedContract;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=200](&lt;&gt;ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated)</formula>
+			<formula>Pr[&lt;=200](&lt;&gt;ror.Terminated &amp;&amp; (forall(i:id_t)RunnableOrchestratedContract(i).Terminated))</formula>
 			<comment>probability of terminating</comment>
 		</query>
 		<query>

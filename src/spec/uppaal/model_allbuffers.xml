@@ -3,10 +3,11 @@
 <nta>
 	<declaration>// Place global declarations here.
 const int queueSize=10;      //size of each buffer
-const int N = 3;            //three services
+const int N = 4;            //number of services
 const int pstop = 1;
 const int pchoice = 2;
 const int paction = 2;
+
 
 //actions and choics IDs
 const int DICTATORIAL_CHOICE = 1;
@@ -18,7 +19,7 @@ int action;            //global action configuration
 int choice;            //global choice configuration
 int partner;           //shared variable for communicating the partner
 
-typedef int[0,N] id_t; //all IDs
+typedef int[0,N-1] id_t; //all IDs
 
 //signals IDs
 const int ORC_CHECK=1;
@@ -1036,24 +1037,21 @@ d2=dequeue()</label>
 			<label kind="assignment" x="-66444" y="-67056">d1=dequeue()</label>
 		</transition>
 	</template>
-	<system>ror = RunnableOrchestration();
-alice = RunnableOrchestratedContract(0);
-bob = RunnableOrchestratedContract(1);
-carl = RunnableOrchestratedContract(2);
+	<system>
 
-system ror,alice,bob,carl;
+system RunnableOrchestration, RunnableOrchestratedContract;
     </system>
 	<queries>
 		<query>
-			<formula>A[](not deadlock || (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated))</formula>
+			<formula>A[](not deadlock || (RunnableOrchestration.Terminated &amp;&amp; (forall (i:id_t) RunnableOrchestratedContract(i).Terminated) ))</formula>
 			<comment>no deadlocks</comment>
 		</query>
 		<query>
-			<formula>A[]((ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated) imply allEmpty())</formula>
+			<formula>A[]((RunnableOrchestration.Terminated &amp;&amp; (forall (i:id_t) RunnableOrchestratedContract(i).Terminated)) imply allEmpty())</formula>
 			<comment>no orphan messages left</comment>
 		</query>
 		<query>
-			<formula>ror.Stop --&gt; (ror.Terminated &amp;&amp; alice.Terminated &amp;&amp; bob.Terminated &amp;&amp; carl.Terminated &amp;&amp; allEmpty())</formula>
+			<formula>RunnableOrchestration.Stop --&gt; (RunnableOrchestration.Terminated &amp;&amp; (forall (i:id_t) RunnableOrchestratedContract(i).Terminated) &amp;&amp; allEmpty())</formula>
 			<comment>if the orchestrator chooses to stop, the services will eventually terminate with no messages left</comment>
 		</query>
 		<query>
@@ -1062,10 +1060,7 @@ system ror,alice,bob,carl;
 This property does not hold, there is no such dummy execution.</comment>
 		</query>
 		<query>
-			<formula>E&lt;&gt;((alice.d1==TYPEMATCH || alice.d1==ADDRESS || alice.d1==PORT)&amp;&amp; 
-(bob.d1==TYPEMATCH || bob.d1==ADDRESS || bob.d1==PORT)&amp;&amp; 
-(carl.d1==TYPEMATCH || carl.d1==ADDRESS || carl.d1==PORT) 
- &amp;&amp; !alice.Done &amp;&amp; !bob.Done &amp;&amp; !carl.Done)</formula>
+			<formula>E&lt;&gt;(forall (i:id_t) (RunnableOrchestratedContract(i).d1==TYPEMATCH || RunnableOrchestratedContract(i).d1==ADDRESS || RunnableOrchestratedContract(i).d1==PORT) &amp;&amp; !RunnableOrchestratedContract(i).Done)</formula>
 			<comment>no interference in a match between two services</comment>
 		</query>
 	</queries>
