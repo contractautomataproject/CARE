@@ -1043,5 +1043,9 @@ system ror,RunnableOrchestratedContract;
 			<formula>E[&lt;=200; 10000](max: sum(i:int[0,N-1]) (sum(j:int[0,queueSize-1])(orc2services[i][j]!=nil)))</formula>
 			<comment></comment>
 		</query>
+		<query>
+			<formula>Pr[&lt;=500](&lt;&gt;forall (i:id_t) (RunnableOrchestratedContract(i).d1==TYPEMATCH || RunnableOrchestratedContract(i).d1==ADDRESS || RunnableOrchestratedContract(i).d1==PORT) &amp;&amp; !RunnableOrchestratedContract(i).Done)</formula>
+			<comment>probability of interferences in matches</comment>
+		</query>
 	</queries>
 </nta>
