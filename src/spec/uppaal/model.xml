@@ -2,7 +2,7 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-const int queueSize=10;      //size of each buffer
+const int queueSize=4;      //size of each buffer
 const int N = 3;            //number of services
 const int pstop = 1;
 const int pchoice = 2;
