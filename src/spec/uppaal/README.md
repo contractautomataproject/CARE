@@ -1,6 +1,6 @@
 ## Formal Model of the Contract Automata Runtime Environment
 
-This folder contains different versions of the Uppaal model of CARE (we used version of Uppal 4.1.26-1, February 2022).
+This folder contains different versions of the Uppaal model of CARE (we used the version of Uppal 4.1.26-1, February 2022).
 
 The file `model.xml` is the base version of the model,  without delays and used for exhaustive model checking. 
 All other models are variations of this base version. 
