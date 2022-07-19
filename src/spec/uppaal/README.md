@@ -14,16 +14,16 @@ In this case the used source code version is b1a6954, navigable here https://git
 
 
 
-### RunnableOrchestratedContract
+### Traceability
+
+
+Traceability information is related to the source code version is b1a6954, navigable here https://github.com/contractautomataproject/CARE/tree/b1a695469fbb5a4d212a96dd95bffa0ed39b71b8. 
 
 The `RunnableOrchestratedContract` automaton with traceability is displayed below.
 
 [RunnableOrchestratedContract](https://github.com/contractautomataproject/CARE/raw/master/src/spec/uppaal/RunnableOrchestratedContract.svg?sanitize=true)
 <img src="https://raw.githubusercontent.com/contractautomataproject/CARE/master/src/spec/uppaal/RunnableOrchestratedContract.svg?sanitize=true">
 
-
-
-## RunnableOrchestration
 
 
 The `RunnableOrchestration` automaton with traceability is displayed below.
