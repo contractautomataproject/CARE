@@ -17,7 +17,7 @@ In this case the used source code version is b1a6954, navigable here https://git
 ### Traceability
 
 
-Traceability information is related to the source code version is b1a6954, navigable here https://github.com/contractautomataproject/CARE/tree/b1a695469fbb5a4d212a96dd95bffa0ed39b71b8. 
+Traceability information is related to the source code version b1a6954, navigable here https://github.com/contractautomataproject/CARE/tree/b1a695469fbb5a4d212a96dd95bffa0ed39b71b8. 
 
 The `RunnableOrchestratedContract` automaton with traceability is displayed below.
 
