@@ -30,15 +30,11 @@ Check https://github.com/ContractAutomataProject/CARE_Example  for an example of
 
 ### Class Diagram
 
-This is the class diagram of CARE (click on the image to enlarge).
-
-<object data="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/Orchestration.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/Orchestration.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+These are the two main class diagrams of CARE.
 
 <img src="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/RunnableOrchestration.png"/>
+
+<img src="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/RunnableOrchestrated.png"/>
 
 
 
