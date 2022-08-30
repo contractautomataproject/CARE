@@ -30,7 +30,7 @@ Check https://github.com/ContractAutomataProject/CARE_Example  for an example of
 
 ### Class Diagram
 
-These are the two main class diagrams of CARE.
+This is the  main class diagram of CARE.
 
 <img src="https://raw.githubusercontent.com/ContractAutomataProject/CARE/master/doc/RunnableOrchestration.png"/>
 
