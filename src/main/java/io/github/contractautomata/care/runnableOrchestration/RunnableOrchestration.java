@@ -71,7 +71,7 @@ public abstract class RunnableOrchestration implements Runnable {
 						(contracts, TypedCALabel::match,State::new,ModalTransition::new,TypedCALabel::new,Automaton::new,
 								t->pred.negate().test(t.getLabel()));
 
-		//conver to CALabel to use the synthesis
+		//convert to CALabel to use the synthesis
 		Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> comp
 				= new Automaton<>(cf.apply(Integer.MAX_VALUE)
 				.getTransition().parallelStream()

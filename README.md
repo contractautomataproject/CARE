@@ -25,7 +25,7 @@ The Contract Automata Runtime Environment is released as a GitHub Package, simpl
 
 ### Usage
 
-Check https://github.com/ContractAutomataProject/CARE_Example  for an example of usage of <tt>CARE</tt>.
+Check https://github.com/ContractAutomataProject/CARE_Example  for examples of usage of <tt>CARE</tt>.
 
 
 ### Class Diagram
@@ -55,3 +55,7 @@ When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <
 A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CATLib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
+### Formal Verification
+
+<tt>CARE</tt> has been formally modelled as a network of  stochastic timed automata and verified using the tool <tt>Uppaal</tt>. 
+For more information check the README file located under the folder `src/spec/uppaal`.
