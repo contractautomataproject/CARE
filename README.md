@@ -25,7 +25,7 @@ The Contract Automata Runtime Environment is released as a GitHub Package, simpl
 
 ### Usage
 
-Check https://github.com/ContractAutomataProject/CARE_Example  for examples of usage of <tt>CARE</tt>.
+Check https://github.com/ContractAutomataProject/CARE_Examples  for examples of usage of <tt>CARE</tt>.
 
 
 ### Class Diagram
