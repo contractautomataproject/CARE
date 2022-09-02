@@ -55,7 +55,8 @@ When initialised,  <tt>RunnableOrchestration</tt> checks that all the involved <
 A class <tt>TypedCALabel</tt> extending the class <tt>CALabel</tt> of <tt>CATLib</tt> is used to add the type of the parameter and the returned value to each action. 
 Thus for a match between a request and an offer it is also required that their types are compatible (i.e. returned values are supertypes of the parameters of the complementary actions).
 
-### Formal Verification
+### Formal Model Verification
 
 <tt>CARE</tt> has been formally modelled as a network of  stochastic timed automata and verified using the tool <tt>Uppaal</tt>. 
+The formal model provides a detailed documentation of the behaviour of the software with traceability information relating the model to the source code. 
 For more information check the README file located under the folder `src/spec/uppaal`.
