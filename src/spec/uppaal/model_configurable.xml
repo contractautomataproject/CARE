@@ -4,7 +4,10 @@
 	<declaration>// Place global declarations here.
 const int queueSize=4;
 const int N = 3;
-const double pstop = 0.25; //probability of stopping, in the interval [0,1]
+const int pstop = 1;
+const int paction = 1;
+const int pchoice = 1;
+const int pnochoice = 1;
 
 //actions and choics IDs
 const int DICTATORIAL_CHOICE = 1;
@@ -259,6 +262,12 @@ int dequeue(int id)
 		</branchpoint>
 		<init ref="id1"/>
 		<transition>
+			<source ref="id39"/>
+			<target ref="id16"/>
+			<label kind="probability" x="-68280" y="-67940">pnochoice</label>
+			<nail x="-68187" y="-67915"/>
+		</transition>
+		<transition>
 			<source ref="id35"/>
 			<target ref="id7"/>
 			<label kind="guard" x="-67736" y="-67770">d==OFFER</label>
@@ -449,7 +458,7 @@ enqueue(offerer,NOPAYLOAD)</label>
 		<transition>
 			<source ref="id39"/>
 			<target ref="id17"/>
-			<label kind="probability" x="-68178" y="-68034">(1-pstop)/2</label>
+			<label kind="probability" x="-68178" y="-68034">pchoice</label>
 		</transition>
 		<transition>
 			<source ref="id15"/>
@@ -462,7 +471,7 @@ enqueue(offerer,NOPAYLOAD)</label>
 		<transition>
 			<source ref="id38"/>
 			<target ref="id6"/>
-			<label kind="probability" x="-68314" y="-67813">1-pstop</label>
+			<label kind="probability" x="-68314" y="-67813">paction</label>
 		</transition>
 		<transition>
 			<source ref="id38"/>
@@ -540,12 +549,6 @@ i++</label>
 			<label kind="assignment" x="-68058" y="-67864">i=0</label>
 		</transition>
 		<transition>
-			<source ref="id39"/>
-			<target ref="id11"/>
-			<label kind="probability" x="-68145" y="-67881">pstop</label>
-			<nail x="-68187" y="-67864"/>
-		</transition>
-		<transition>
 			<source ref="id6"/>
 			<target ref="id10"/>
 			<label kind="guard" x="-68416" y="-67447">action==
@@ -574,13 +577,6 @@ MAJORITARIAN_CHOICE</label>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id39"/>
-		</transition>
-		<transition>
-			<source ref="id39"/>
-			<target ref="id6"/>
-			<label kind="probability" x="-68238" y="-67864">(1-pstop)/2</label>
-			<nail x="-68187" y="-67779"/>
-			<nail x="-68306" y="-67779"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>

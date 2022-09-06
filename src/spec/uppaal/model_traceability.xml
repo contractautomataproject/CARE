@@ -6,6 +6,7 @@ const int queueSize=10;      //size of each buffer
 const int N = 3;            //three services
 const int pstop = 1;
 const int pchoice = 2;
+const int pnochoice = 1;
 const int paction = 2;
 
 //actions and choics IDs
@@ -277,6 +278,15 @@ line 183</label>
 		<branchpoint id="id39" x="-68127" y="-68144">
 		</branchpoint>
 		<init ref="id1"/>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id16"/>
+			<label kind="probability" x="-68153" y="-68059">pnochoice</label>
+			<label kind="comments" x="-68246" y="-68127">RunnableOrchestration.java
+
+line 161-163</label>
+			<nail x="-68127" y="-67957"/>
+		</transition>
 		<transition>
 			<source ref="id35"/>
 			<target ref="id7"/>
@@ -657,14 +667,6 @@ lines 68-69</label>
 			<label kind="assignment" x="-67531" y="-68144">i=0</label>
 		</transition>
 		<transition>
-			<source ref="id39"/>
-			<target ref="id11"/>
-			<label kind="probability" x="-68110" y="-68170">pstop</label>
-			<label kind="comments" x="-67830" y="-68170">RunnableOrchestration.java
-
-line 176</label>
-		</transition>
-		<transition>
 			<source ref="id6"/>
 			<target ref="id10"/>
 			<label kind="guard" x="-68595" y="-67321">action==
@@ -694,15 +696,6 @@ MAJORITARIAN_CHOICE</label>
 			<source ref="id7"/>
 			<target ref="id39"/>
 			<nail x="-68399" y="-68144"/>
-		</transition>
-		<transition>
-			<source ref="id39"/>
-			<target ref="id6"/>
-			<label kind="probability" x="-68153" y="-68127">paction</label>
-			<label kind="comments" x="-68161" y="-68102">RunnableOrchestration.java
-
-line 201</label>
-			<nail x="-68119" y="-67634"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>

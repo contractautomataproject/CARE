@@ -6,6 +6,7 @@ const int queueSize=4;      //size of each buffer
 const int N = 3;            //number of services
 const int pstop = 1;
 const int pchoice = 2;
+const int pnochoice = 0;
 const int paction = 2;
 
 //actions and choics IDs
@@ -274,6 +275,12 @@ int dequeue(int id)
 		<branchpoint id="id39" x="-68187" y="-68017">
 		</branchpoint>
 		<init ref="id1"/>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id16"/>
+			<label kind="probability" x="-68255" y="-67915">pnochoice</label>
+			<nail x="-68187" y="-67915"/>
+		</transition>
 		<transition>
 			<source ref="id35"/>
 			<target ref="id7"/>
@@ -556,12 +563,6 @@ i++</label>
 			<label kind="assignment" x="-68058" y="-67864">i=0</label>
 		</transition>
 		<transition>
-			<source ref="id39"/>
-			<target ref="id11"/>
-			<label kind="probability" x="-68145" y="-67881">pstop</label>
-			<nail x="-68187" y="-67864"/>
-		</transition>
-		<transition>
 			<source ref="id6"/>
 			<target ref="id10"/>
 			<label kind="guard" x="-68416" y="-67447">action==
@@ -590,13 +591,6 @@ MAJORITARIAN_CHOICE</label>
 		<transition>
 			<source ref="id7"/>
 			<target ref="id39"/>
-		</transition>
-		<transition>
-			<source ref="id39"/>
-			<target ref="id6"/>
-			<label kind="probability" x="-68195" y="-67864">paction</label>
-			<nail x="-68187" y="-67779"/>
-			<nail x="-68306" y="-67779"/>
 		</transition>
 		<transition>
 			<source ref="id4"/>
@@ -1030,7 +1024,7 @@ system ror, RunnableOrchestratedContract;
     </system>
 	<queries>
 		<query>
-			<formula>A[](not deadlock || (ror.Terminated &amp;&amp; (forall (i:id_t) RunnableOrchestratedContract(i).Terminated) ))</formula>
+			<formula>A[](not deadlock || (ror.Terminated &amp;&amp; (forall (i:id_t) RunnableOrchestratedContract(i).Terminated)))</formula>
 			<comment>no deadlocks</comment>
 		</query>
 		<query>

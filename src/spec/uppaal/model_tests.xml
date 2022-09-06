@@ -2,16 +2,19 @@
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
 <nta>
 	<declaration>// Place global declarations here.
-const int queueSize=5;      //size of each buffer
-const int N = 3;            //number of services
 
 
-//probabilities and exponential distriubtion rate
-const int pstop = 25;
+int __reach__ = 0;
+int __single__ = 0;
+
+
+const int queueSize=4;
+const int N = 1;
+
+const int pstop = 1;
+const int paction = 1;
 const int pchoice = 1;
-const int pnochoice = 0;
-const int paction = 75;
-const int rate=2;
+const int pnochoice = 1;
 
 //actions and choics IDs
 const int DICTATORIAL_CHOICE = 1;
@@ -19,10 +22,8 @@ const int MAJORITARIAN_CHOICE = 2;
 const int CENTRALISED_ACTION = 3;
 const int DISTRIBUTED_ACTION = 4;
 
-int action;            //global action configuration
-int choice;            //global choice configuration
 
-typedef int[0,N-1] id_t; //all IDs
+typedef int[0,N] id_t; //all IDs
 
 //signals IDs
 const int ORC_CHECK=1;
@@ -53,7 +54,7 @@ int offerer2requester;
 const int nil = 0;	 //empty position in the buffer
 
 
-//return true if all buffers are empty
+
 bool allEmpty(){
     int i=0;
     int j=0;
@@ -70,6 +71,7 @@ bool allEmpty(){
 </declaration>
 	<template>
 		<name x="5" y="5">RunnableOrchestration</name>
+		<parameter>const int choice, const int action</parameter>
 		<declaration>// Place local declarations here.
 int i=0;
 int d;
@@ -77,7 +79,7 @@ int involved;
 int offerer;
 int requester;
 
-void initialize(int conf){
+void initialize(){
     int i;
     int id;
     for (id:=0;id&lt;N;id++){
@@ -90,19 +92,6 @@ void initialize(int conf){
     requester2offerer=nil;
     offerer2requester=nil;
 
-    if (conf==0){
-        choice=DICTATORIAL_CHOICE;
-        action=CENTRALISED_ACTION;
-    } else if (conf==1){
-        choice=DICTATORIAL_CHOICE;
-        action=DISTRIBUTED_ACTION;
-    } else if (conf==2){
-        choice=MAJORITARIAN_CHOICE;
-        action=CENTRALISED_ACTION;
-    } else if (conf==3){
-        choice=MAJORITARIAN_CHOICE;
-        action=DISTRIBUTED_ACTION;
-    }
 }
 
 void enqueue(int id,int ide_sig)
@@ -154,24 +143,23 @@ int dequeue(int id)
 }</declaration>
 		<location id="id0" x="-68442" y="-68017">
 			<name x="-68501" y="-68051">CheckCompatibility</name>
-			<label kind="exponentialrate" x="-68467" y="-68017">rate</label>
+			<urgent/>
 		</location>
 		<location id="id1" x="-68442" y="-68127">
 			<committed/>
 		</location>
 		<location id="id2" x="-68442" y="-67600">
 			<name x="-68434" y="-67634">Error</name>
-			<label kind="exponentialrate" x="-68450" y="-67592">rate</label>
 		</location>
 		<location id="id3" x="-68442" y="-67855">
-			<label kind="exponentialrate" x="-68452" y="-67835">rate</label>
+			<urgent/>
 		</location>
 		<location id="id4" x="-68442" y="-67745">
-			<label kind="exponentialrate" x="-68452" y="-67725">rate</label>
+			<urgent/>
 		</location>
 		<location id="id5" x="-67966" y="-68017">
 			<name x="-67976" y="-68051">Choice</name>
-			<label kind="exponentialrate" x="-67976" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id6" x="-68305" y="-67702">
 			<name x="-68297" y="-67727">Action</name>
@@ -179,98 +167,97 @@ int dequeue(int id)
 		</location>
 		<location id="id7" x="-68323" y="-68017">
 			<name x="-68340" y="-68051">Start</name>
-			<label kind="exponentialrate" x="-68333" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id8" x="-67762" y="-68017">
-			<label kind="exponentialrate" x="-67772" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id9" x="-68178" y="-67702">
-			<label kind="exponentialrate" x="-68188" y="-67682">rate</label>
+			<urgent/>
 		</location>
 		<location id="id10" x="-68306" y="-67394">
-			<label kind="exponentialrate" x="-68316" y="-67374">rate</label>
+			<urgent/>
 		</location>
 		<location id="id11" x="-68076" y="-67864">
 			<name x="-68086" y="-67898">Stop</name>
-			<label kind="exponentialrate" x="-68086" y="-67844">rate</label>
+			<urgent/>
 		</location>
 		<location id="id12" x="-67932" y="-67864">
 			<name x="-67966" y="-67898">SendingTermination</name>
-			<label kind="exponentialrate" x="-67942" y="-67844">rate</label>
+			<urgent/>
 		</location>
 		<location id="id13" x="-67932" y="-67796">
 			<name x="-67915" y="-67804">Terminated</name>
-			<label kind="exponentialrate" x="-67940" y="-67787">rate</label>
 		</location>
 		<location id="id14" x="-67583" y="-68017">
-			<label kind="exponentialrate" x="-67593" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id15" x="-67430" y="-68017">
-			<label kind="exponentialrate" x="-67440" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id16" x="-68306" y="-67915">
-			<label kind="exponentialrate" x="-68316" y="-67895">rate</label>
+			<urgent/>
 		</location>
 		<location id="id17" x="-68085" y="-68017">
-			<label kind="exponentialrate" x="-68095" y="-67997">rate</label>
+			<urgent/>
 		</location>
 		<location id="id18" x="-68059" y="-67702">
 			<name x="-68102" y="-67736">CentralisedOffer</name>
-			<label kind="exponentialrate" x="-68069" y="-67682">rate</label>
+			<urgent/>
 		</location>
 		<location id="id19" x="-68033" y="-67568">
 			<name x="-68092" y="-67602">CentralisedMatch</name>
-			<label kind="exponentialrate" x="-68043" y="-67548">rate</label>
+			<urgent/>
 		</location>
 		<location id="id20" x="-67854" y="-67702">
-			<label kind="exponentialrate" x="-67864" y="-67682">rate</label>
+			<urgent/>
 		</location>
 		<location id="id21" x="-67820" y="-67568">
-			<label kind="exponentialrate" x="-67830" y="-67548">rate</label>
+			<urgent/>
 		</location>
 		<location id="id22" x="-67625" y="-67567">
-			<label kind="exponentialrate" x="-67635" y="-67547">rate</label>
+			<urgent/>
 		</location>
 		<location id="id23" x="-67421" y="-67566">
-			<label kind="exponentialrate" x="-67431" y="-67546">rate</label>
+			<urgent/>
 		</location>
 		<location id="id24" x="-67421" y="-67719">
-			<label kind="exponentialrate" x="-67431" y="-67699">rate</label>
+			<urgent/>
 		</location>
 		<location id="id25" x="-68306" y="-67276">
-			<label kind="exponentialrate" x="-68316" y="-67256">rate</label>
+			<urgent/>
 		</location>
 		<location id="id26" x="-68272" y="-67362">
 			<name x="-68289" y="-67387">DistributedOffer</name>
-			<label kind="exponentialrate" x="-68282" y="-67342">rate</label>
+			<urgent/>
 		</location>
 		<location id="id27" x="-68212" y="-67277">
 			<name x="-68272" y="-67260">DistributedMatch</name>
-			<label kind="exponentialrate" x="-68222" y="-67257">rate</label>
+			<urgent/>
 		</location>
 		<location id="id28" x="-68017" y="-67362">
-			<label kind="exponentialrate" x="-68027" y="-67342">rate</label>
+			<urgent/>
 		</location>
 		<location id="id29" x="-67999" y="-67277">
-			<label kind="exponentialrate" x="-68009" y="-67257">rate</label>
+			<urgent/>
 		</location>
 		<location id="id30" x="-67770" y="-67277">
-			<label kind="exponentialrate" x="-67780" y="-67257">rate</label>
+			<urgent/>
 		</location>
 		<location id="id31" x="-67609" y="-67277">
-			<label kind="exponentialrate" x="-67619" y="-67257">rate</label>
+			<urgent/>
 		</location>
 		<location id="id32" x="-67422" y="-67277">
-			<label kind="exponentialrate" x="-67432" y="-67257">rate</label>
+			<urgent/>
 		</location>
 		<location id="id33" x="-67422" y="-67489">
-			<label kind="exponentialrate" x="-67432" y="-67469">rate</label>
+			<urgent/>
 		</location>
 		<location id="id34" x="-67430" y="-67889">
-			<label kind="exponentialrate" x="-67440" y="-67869">rate</label>
+			<urgent/>
 		</location>
 		<location id="id35" x="-67668" y="-67702">
-			<label kind="exponentialrate" x="-67678" y="-67682">rate</label>
+			<urgent/>
 		</location>
 		<branchpoint id="id36" x="-68272" y="-67276">
 		</branchpoint>
@@ -284,7 +271,7 @@ int dequeue(int id)
 		<transition>
 			<source ref="id39"/>
 			<target ref="id16"/>
-			<label kind="probability" x="-68263" y="-67932">pnochoice</label>
+			<label kind="probability" x="-68280" y="-67932">pnochoice</label>
 			<nail x="-68187" y="-67915"/>
 		</transition>
 		<transition>
@@ -370,7 +357,7 @@ offerer=0</label>
 		<transition>
 			<source ref="id26"/>
 			<target ref="id28"/>
-			<label kind="guard" x="-68170" y="-67387">available(offerer)&gt;=rate</label>
+			<label kind="guard" x="-68170" y="-67387">available(offerer)&gt;=2</label>
 			<label kind="assignment" x="-68221" y="-67362">enqueue(offerer,TYPEOFFER),
 enqueue(offerer,NOPAYLOAD)</label>
 		</transition>
@@ -432,7 +419,7 @@ enqueue(offerer,REQUEST)</label>
 			<source ref="id19"/>
 			<target ref="id21"/>
 			<label kind="select" x="-67973" y="-67610">n:int[0,N-2]</label>
-			<label kind="guard" x="-67973" y="-67593">available(n)&gt;=rate</label>
+			<label kind="guard" x="-67973" y="-67593">available(n)&gt;=2</label>
 			<label kind="assignment" x="-68015" y="-67568">requester=n,offerer=n+1,
 enqueue(requester,ACTION),
 enqueue(requester,SKIP)</label>
@@ -441,7 +428,7 @@ enqueue(requester,SKIP)</label>
 			<source ref="id18"/>
 			<target ref="id20"/>
 			<label kind="select" x="-67965" y="-67736">n:int[0,N-1]</label>
-			<label kind="guard" x="-68016" y="-67719">available(n)&gt;=rate</label>
+			<label kind="guard" x="-68016" y="-67719">available(n)&gt;=2</label>
 			<label kind="assignment" x="-68025" y="-67702">offerer=n,
 enqueue(offerer,ACTION),
 enqueue(offerer,NOPAYLOAD)</label>
@@ -628,13 +615,12 @@ enqueue(i,action)</label>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id0"/>
-			<label kind="select" x="-68442" y="-68101">conf:int[0,3]</label>
-			<label kind="assignment" x="-68442" y="-68084">initialize(conf),i=0</label>
+			<label kind="assignment" x="-68442" y="-68084">initialize(),i=0</label>
 		</transition>
 	</template>
 	<template>
 		<name>RunnableOrchestratedContract</name>
-		<parameter>const id_t id</parameter>
+		<parameter>const id_t id, const int choice, const int action</parameter>
 		<declaration>int d1;
 int d2;
 int address;
@@ -690,13 +676,13 @@ int dequeue()
 }</declaration>
 		<location id="id40" x="-66453" y="-67056">
 			<name x="-66470" y="-67090">Ready</name>
-			<label kind="exponentialrate" x="-66463" y="-67036">rate</label>
+			<urgent/>
 		</location>
 		<location id="id41" x="-66301" y="-67056">
-			<label kind="exponentialrate" x="-66311" y="-67036">rate</label>
+			<urgent/>
 		</location>
 		<location id="id42" x="-66301" y="-67184">
-			<label kind="exponentialrate" x="-66311" y="-67164">rate</label>
+			<urgent/>
 		</location>
 		<location id="id43" x="-66053" y="-67056">
 			<committed/>
@@ -705,25 +691,25 @@ int dequeue()
 			<committed/>
 		</location>
 		<location id="id45" x="-65790" y="-67056">
-			<label kind="exponentialrate" x="-65800" y="-67036">rate</label>
+			<urgent/>
 		</location>
 		<location id="id46" x="-65654" y="-67056">
 			<committed/>
 		</location>
 		<location id="id47" x="-65654" y="-67149">
-			<label kind="exponentialrate" x="-65664" y="-67129">rate</label>
+			<urgent/>
 		</location>
 		<location id="id48" x="-65654" y="-67235">
-			<label kind="exponentialrate" x="-65664" y="-67215">rate</label>
+			<urgent/>
 		</location>
 		<location id="id49" x="-66047" y="-66852">
-			<label kind="exponentialrate" x="-66057" y="-66832">rate</label>
+			<urgent/>
 		</location>
 		<location id="id50" x="-66062" y="-66733">
-			<label kind="exponentialrate" x="-66072" y="-66713">rate</label>
+			<urgent/>
 		</location>
 		<location id="id51" x="-65909" y="-66852">
-			<label kind="exponentialrate" x="-65919" y="-66832">rate</label>
+			<urgent/>
 		</location>
 		<location id="id52" x="-66054" y="-66997">
 			<name x="-66045" y="-67022">Terminated</name>
@@ -732,7 +718,7 @@ int dequeue()
 			<name x="-66106" y="-67218">Error</name>
 		</location>
 		<location id="id54" x="-65722" y="-66852">
-			<label kind="exponentialrate" x="-65732" y="-66832">rate</label>
+			<urgent/>
 		</location>
 		<location id="id55" x="-65586" y="-66852">
 			<committed/>
@@ -741,48 +727,48 @@ int dequeue()
 			<committed/>
 		</location>
 		<location id="id57" x="-65723" y="-66733">
-			<label kind="exponentialrate" x="-65733" y="-66713">rate</label>
+			<urgent/>
 		</location>
 		<location id="id58" x="-66300" y="-66580">
-			<label kind="exponentialrate" x="-66310" y="-66560">rate</label>
+			<urgent/>
 		</location>
 		<location id="id59" x="-66300" y="-66504">
-			<label kind="exponentialrate" x="-66310" y="-66484">rate</label>
+			<urgent/>
 		</location>
 		<location id="id60" x="-65586" y="-66733">
-			<label kind="exponentialrate" x="-65596" y="-66713">rate</label>
+			<urgent/>
 		</location>
 		<location id="id61" x="-66147" y="-66580">
-			<label kind="exponentialrate" x="-66157" y="-66560">rate</label>
+			<urgent/>
 		</location>
 		<location id="id62" x="-66155" y="-66504">
 			<committed/>
 		</location>
 		<location id="id63" x="-66036" y="-66504">
-			<label kind="exponentialrate" x="-66046" y="-66484">rate</label>
+			<urgent/>
 		</location>
 		<location id="id64" x="-65807" y="-66504">
-			<label kind="exponentialrate" x="-65817" y="-66484">rate</label>
+			<urgent/>
 		</location>
 		<location id="id65" x="-65909" y="-66580">
-			<label kind="exponentialrate" x="-65919" y="-66560">rate</label>
+			<urgent/>
 		</location>
 		<location id="id66" x="-65586" y="-66504">
-			<label kind="exponentialrate" x="-65596" y="-66484">rate</label>
+			<urgent/>
 		</location>
 		<location id="id67" x="-65713" y="-66580">
 			<name x="-65723" y="-66614">Done</name>
-			<label kind="exponentialrate" x="-65723" y="-66560">rate</label>
+			<urgent/>
 		</location>
 		<location id="id68" x="-65586" y="-66580">
-			<label kind="exponentialrate" x="-65596" y="-66560">rate</label>
+			<urgent/>
 		</location>
 		<init ref="id40"/>
 		<transition>
 			<source ref="id68"/>
 			<target ref="id40"/>
 			<label kind="guard" x="-65654" y="-66682">!isFull()</label>
-			<label kind="assignment" x="-65688" y="-66665">enqueue(ACK),
+			<label kind="assignment" x="-65696" y="-66665">enqueue(ACK),
 d1=0</label>
 			<nail x="-65586" y="-66665"/>
 			<nail x="-66453" y="-66665"/>
@@ -797,7 +783,8 @@ d1=0</label>
 			<source ref="id67"/>
 			<target ref="id40"/>
 			<label kind="guard" x="-65875" y="-66682">requester2offerer==ACK</label>
-			<label kind="assignment" x="-65892" y="-66665">requester2offerer=nil,d1=0</label>
+			<label kind="assignment" x="-65858" y="-66665">requester2offerer=nil, 
+d1=0</label>
 			<nail x="-65713" y="-66665"/>
 			<nail x="-66453" y="-66665"/>
 		</transition>
@@ -1021,25 +1008,30 @@ d2=dequeue()</label>
 			<source ref="id40"/>
 			<target ref="id41"/>
 			<label kind="guard" x="-66393" y="-67073">!isEmpty()</label>
-			<label kind="assignment" x="-66444" y="-67056">d1=dequeue()</label>
+			<label kind="assignment" x="-66410" y="-67056">d1=dequeue()</label>
+			<label kind="testcode">$(alice.id)</label>
 		</transition>
 	</template>
-	<system>ror = RunnableOrchestration();
+	<system>// Place template instantiations here.
 
-system ror,RunnableOrchestratedContract;
+ror = RunnableOrchestration(MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
+alice = RunnableOrchestratedContract(0,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
+bob = RunnableOrchestratedContract(1,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
+carl = RunnableOrchestratedContract(2,DICTATORIAL_CHOICE,DISTRIBUTED_ACTION);
+
+// List one or more processes to be composed into a system.
+system ror,alice;
     </system>
 	<queries>
 		<query>
-			<formula>Pr[&lt;=80](&lt;&gt;ror.Terminated &amp;&amp; (forall(i:id_t)RunnableOrchestratedContract(i).Terminated))</formula>
-			<comment>probability of terminating</comment>
+			<formula>A[](!ror.Start)</formula>
+			<comment>Carl has a configuration different from the orchestrator and the other services. 
+The orchestration never starts.</comment>
 		</query>
 		<query>
-			<formula>E[&lt;=100; 10000](max: sum(i:int[0,N-1]) (sum(j:int[0,queueSize-1])(orc2services[i][j]!=nil)))</formula>
-			<comment></comment>
-		</query>
-		<query>
-			<formula>Pr[&lt;=500](&lt;&gt;forall (i:id_t) (RunnableOrchestratedContract(i).d1==TYPEMATCH || RunnableOrchestratedContract(i).d1==ADDRESS || RunnableOrchestratedContract(i).d1==PORT) &amp;&amp; !RunnableOrchestratedContract(i).Done)</formula>
-			<comment>probability of interferences in matches</comment>
+			<formula>A&lt;&gt; (ror.Error &amp;&amp; carl.Error)</formula>
+			<comment>Carl has a configuration different from the orchestrator and the other services. 
+In all executions, eventually an error state is reached.</comment>
 		</query>
 	</queries>
 </nta>
