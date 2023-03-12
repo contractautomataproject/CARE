@@ -10,7 +10,12 @@
   
  Thus, <tt>CARE</tt> is the missing piece between specifications through contract automata  and their implementations, so making explicit the low-level interactions realising the prescribed actions.
  
- 
+### Scientific Publication
+
+Basile, D., ter Beek, M.H. (2023). A Runtime Environment for Contract Automata. In: Chechik, M., Katoen, JP., Leucker, M. (eds) Formal Methods. FM 2023. Lecture Notes in Computer Science, vol 14000. Springer, Cham. https://doi.org/10.1007/978-3-031-27481-7_31
+
+
+
 ### Install
 
 The Contract Automata Runtime Environment is released as a GitHub Package, simply add this dependency to the pom.xml of your Maven project.
