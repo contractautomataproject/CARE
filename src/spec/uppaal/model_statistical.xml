@@ -3,7 +3,7 @@
 <nta>
 	<declaration>// Place global declarations here.
 const int queueSize=5;      //size of each buffer
-const int N = 3;            //number of services
+const int N = 10;            //number of services
 const int timeout=15;     //socket read timeout
 
 //probabilities 
@@ -21,6 +21,9 @@ const int DICTATORIAL_CHOICE = 1;
 const int MAJORITARIAN_CHOICE = 2; 
 const int CENTRALISED_ACTION = 3;
 const int DISTRIBUTED_ACTION = 4;
+
+int action;            //global action configuration
+int choice;            //global choice configuration
 
 typedef int[0,N-1] id_t;   //IDs of RunnableOrchestratedContract
 
@@ -93,7 +96,6 @@ bool allEmpty(){
 }</declaration>
 	<template>
 		<name x="5" y="5">RunnableOrchestration</name>
-		<parameter>const int choice, const int action</parameter>
 		<declaration>// Place local declarations here.
 int i=0;
 int d;
@@ -101,7 +103,7 @@ int involved;
 int offerer;
 int requester;
 
-void initialize(){
+void initialize(int conf){
     int i;
     int id;
     for (id:=0;id&lt;N;id++){
@@ -114,6 +116,19 @@ void initialize(){
     requester2offerer=nil;
     offerer2requester=nil;
 
+    if (conf==0){
+        choice=DICTATORIAL_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==1){
+        choice=DICTATORIAL_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    } else if (conf==2){
+        choice=MAJORITARIAN_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==3){
+        choice=MAJORITARIAN_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    }
 }
 
 void enqueue(int id,int ide_sig)
@@ -162,8 +177,7 @@ int dequeue(int id)
         }
     }
     return nil;
-}
-</declaration>
+}</declaration>
 		<location id="id0" x="-68442" y="-68017">
 			<name x="-68501" y="-68051">CheckCompatibility</name>
 			<label kind="exponentialrate" x="-68476" y="-68008">write</label>
@@ -892,12 +906,13 @@ enqueue(i,action)</label>
 		<transition>
 			<source ref="id1"/>
 			<target ref="id0"/>
-			<label kind="assignment" x="-68442" y="-68084">initialize(),i=0</label>
+			<label kind="select" x="-68442" y="-68101">conf:int[0,3]</label>
+			<label kind="assignment" x="-68442" y="-68084">initialize(conf),i=0</label>
 		</transition>
 	</template>
 	<template>
 		<name>RunnableOrchestratedContract</name>
-		<parameter>const id_t id, const int choice, const int action</parameter>
+		<parameter>const id_t id</parameter>
 		<declaration>int d1;
 int d2;
 int address;
@@ -1491,35 +1506,53 @@ d1=nil,d2=nil</label>
 		<transition>
 			<source ref="id76"/>
 			<target ref="id76"/>
-			<label kind="synchronisation" x="-969" y="-833">reset[id]?</label>
-			<label kind="assignment" x="-977" y="-816">c=0</label>
-			<nail x="-952" y="-816"/>
-			<nail x="-918" y="-816"/>
+			<label kind="synchronisation" x="-977" y="-824">reset[id]?</label>
+			<label kind="assignment" x="-977" y="-807">c=0</label>
+			<nail x="-952" y="-807"/>
+			<nail x="-918" y="-807"/>
 		</transition>
 	</template>
-	<system>// Place template instantiations here.
+	<system>ror = RunnableOrchestration();
 
-ror = RunnableOrchestration(MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
-alice = RunnableOrchestratedContract(0,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
-bob = RunnableOrchestratedContract(1,MAJORITARIAN_CHOICE,DISTRIBUTED_ACTION);
-carl = RunnableOrchestratedContract(2,DICTATORIAL_CHOICE,DISTRIBUTED_ACTION);
-ast = SocketTimeout(0);
-bst = SocketTimeout(1);
-cst = SocketTimeout(2);
-
-// List one or more processes to be composed into a system.
-system ror,alice,bob,carl,ast,bst,cst;
+system ror,RunnableOrchestratedContract,SocketTimeout;
     </system>
 	<queries>
 		<query>
-			<formula>A[](!ror.Start)</formula>
-			<comment>Carl has a configuration different from the orchestrator and the other services. 
-The orchestration never starts.</comment>
+			<formula>E[&lt;=500; 10000](max: sum(i:int[0,N-1]) (sum(j:int[0,queueSize-1])(orc2services[i][j]!=nil)))</formula>
+			<comment>average maximum buffer occupation</comment>
 		</query>
 		<query>
-			<formula>A&lt;&gt; ((ror.Error &amp;&amp; carl.Error)||ror.Timeout)</formula>
-			<comment>Carl has a configuration different from the orchestrator and the other services. 
-In all executions, eventually an error state is reached.</comment>
+			<formula>Pr[&lt;=500] (&lt;&gt;(exists (i:id_t) ror.isFull(i)))</formula>
+			<comment>probability of filling one of the buffers used by the orchestrator</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=500] (&lt;&gt; ror.Timeout)</formula>
+			<comment>the probability of timing out before terminating the execution</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=500](&lt;&gt;ror.Terminated &amp;&amp; (forall(i:id_t)RunnableOrchestratedContract(i).Terminated))</formula>
+			<comment>probability of terminating</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=500](&lt;&gt;!allEmpty() &amp;&amp; ror.Terminated &amp;&amp; (forall(i:id_t)RunnableOrchestratedContract(i).Terminated))</formula>
+			<comment>probability of orphan messages</comment>
+		</query>
+		<query>
+			<formula>Pr[&lt;=500](&lt;&gt;exists (i:id_t) (i&lt;N-1 &amp;&amp;
+                            (RunnableOrchestratedContract(i).d1==TYPEMATCH || 
+			     RunnableOrchestratedContract(i).d1==ADDRESS   || 
+			     RunnableOrchestratedContract(i).d1==PORT)) 
+                            &amp;&amp;
+			   ((RunnableOrchestratedContract(i+1).d1==TYPEMATCH || 
+			     RunnableOrchestratedContract(i+1).d1==ADDRESS   || 
+			     RunnableOrchestratedContract(i+1).d1==PORT))
+			 &amp;&amp;
+			( exists(j:id_t)(j!=i &amp;&amp; j!=i+1 &amp;&amp; 
+			    (RunnableOrchestratedContract(j).d1==TYPEMATCH || 
+			     RunnableOrchestratedContract(j).d1==ADDRESS   || 
+			     RunnableOrchestratedContract(j).d1==PORT)))
+)</formula>
+			<comment>probability of interferences in matches</comment>
 		</query>
 	</queries>
 </nta>
