@@ -1,4 +1,5 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![UPPAAL: formally verified](https://img.shields.io/badge/UPPAAL-formally%20verified-blue)](https://github.com/contractautomataproject/CARE/tree/master/src/spec/uppaal)
 
 
 # Contract Automata Runtime Environment (CARE)
