@@ -62,7 +62,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	 * @param toChoose  the list of possible choices
 	 * @return the choice made to be communicated to the orchestrator
 	 */
-	private String select(State<String> currentState, String[] toChoose) {
+	public String select(State<String> currentState, String[] toChoose) {
 		if (currentState.isFinalState()&&generator.nextInt(2)==0) //50% chance of terminating
 			return RunnableOrchestration.stop_choice; 
 		else		
