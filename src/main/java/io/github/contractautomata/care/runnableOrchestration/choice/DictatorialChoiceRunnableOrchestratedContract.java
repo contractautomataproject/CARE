@@ -17,11 +17,10 @@ public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrche
 	public DictatorialChoiceRunnableOrchestratedContract(Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>> contract,
 														 int port, Object service, OrchestratedAction act) throws IOException {
 		super(contract, port, service,act);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public void choice(State<String> currentState,ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
+	public synchronized void choice(State<String> currentState,ObjectOutputStream oout, ObjectInputStream oin) throws IOException {
 	}
 
 	@Override

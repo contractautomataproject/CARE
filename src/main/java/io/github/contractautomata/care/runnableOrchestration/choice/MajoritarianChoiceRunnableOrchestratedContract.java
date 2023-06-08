@@ -35,7 +35,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	}
 
 	@Override
-	public void choice(State<String> currentState, ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
+	public synchronized void choice(State<String> currentState, ObjectOutputStream oout, ObjectInputStream oin) throws IOException, ClassNotFoundException {
 
 		//receive message from orchestrator on whether to choose or skip
 		String action = (String) oin.readObject();
@@ -62,7 +62,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	 * @param toChoose  the list of possible choices
 	 * @return the choice made to be communicated to the orchestrator
 	 */
-	public String select(State<String> currentState, String[] toChoose) {
+	private String select(State<String> currentState, String[] toChoose) {
 		if (currentState.isFinalState()&&generator.nextInt(2)==0) //50% chance of terminating
 			return RunnableOrchestration.stop_choice; 
 		else		

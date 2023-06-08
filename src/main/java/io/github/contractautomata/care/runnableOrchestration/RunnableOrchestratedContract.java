@@ -1,5 +1,16 @@
 package io.github.contractautomata.care.runnableOrchestration;
 
+import io.github.contractautomata.care.exceptions.ContractViolationException;
+import io.github.contractautomata.care.label.TypedCALabel;
+import io.github.contractautomata.care.runnableOrchestration.actions.OrchestratedAction;
+import io.github.contractautomata.catlib.automaton.Automaton;
+import io.github.contractautomata.catlib.automaton.label.CALabel;
+import io.github.contractautomata.catlib.automaton.label.action.Action;
+import io.github.contractautomata.catlib.automaton.state.State;
+import io.github.contractautomata.catlib.automaton.transition.ModalTransition;
+import io.github.contractautomata.catlib.operations.RelabelingOperator;
+
+import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,17 +20,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
-import javax.net.ServerSocketFactory;
-
-import io.github.contractautomata.care.exceptions.ContractViolationException;
-import io.github.contractautomata.care.runnableOrchestration.actions.OrchestratedAction;
-import io.github.contractautomata.care.label.TypedCALabel;
-import io.github.contractautomata.catlib.automaton.Automaton;
-import io.github.contractautomata.catlib.automaton.label.CALabel;
-import io.github.contractautomata.catlib.automaton.label.action.Action;
-import io.github.contractautomata.catlib.automaton.state.State;
-import io.github.contractautomata.catlib.automaton.transition.ModalTransition;
 
 /**
  * 
@@ -76,14 +76,22 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 			while (true) {
 				new Thread() {
 					private final Socket socket;
-					private io.github.contractautomata.catlib.automaton.state.State<String> currentState;
+                    private final Automaton<String, Action, io.github.contractautomata.catlib.automaton.state.State<String>,
+                                        ModalTransition<String,Action,
+                                                io.github.contractautomata.catlib.automaton.state.State<String>,TypedCALabel>>
+                                                     contractCopy;
+                    private io.github.contractautomata.catlib.automaton.state.State<String> currentState;
+
 					{
 						socket = servsock.accept();
 						socket.setSoTimeout(timeout);
-						currentState = contract.getStates().parallelStream()
-								.filter(io.github.contractautomata.catlib.automaton.state.State::isInitial)
-								.findAny()
-								.orElseThrow(IllegalArgumentException::new);
+                        contractCopy =new Automaton<>(new RelabelingOperator<String,TypedCALabel>
+                                (TypedCALabel::new,l->l,s->s.isInitial(),s->s.isFinalState())
+                                .apply(contract));
+                        currentState = contractCopy.getStates().parallelStream()
+                                .filter(io.github.contractautomata.catlib.automaton.state.State::isInitial)
+                                .findAny()
+                                .orElseThrow(IllegalArgumentException::new);
 					}
 
 					@Override
@@ -119,7 +127,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 
 								//find a transition to fire
 								ModalTransition<String,Action, io.github.contractautomata.catlib.automaton.state.State<String>,TypedCALabel> t =
-										contract.getForwardStar(currentState)
+										contractCopy.getForwardStar(currentState)
 										.stream()
 										.filter(tr->tr.getLabel().getAction().getLabel().equals(action))
 										.findAny()

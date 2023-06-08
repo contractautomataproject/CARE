@@ -30,7 +30,7 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 	 * @throws IOException
 	 * @throws  
 	 */
-	public void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
+	public synchronized void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, IOException {
 
 		Class<?> c=m1.getParameterTypes()[0];
 

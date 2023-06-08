@@ -19,7 +19,7 @@ public interface OrchestratedAction {
 	 * @param oout		output to the orchestrator
 	 * @param t			transition of the contract selected to be fired
 	 */
-	void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t ) throws Exception;
+	void invokeMethod(RunnableOrchestratedContract rc, Method m1, ObjectInputStream oin, ObjectOutputStream oout, ModalTransition<String, Action, State<String>, TypedCALabel> t) throws Exception;
 
 	String getActionType();
 }
