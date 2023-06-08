@@ -153,6 +153,7 @@ Verifying formula 4 at /nta/queries/query[4]/formula
 -- CPU user time used : 2710 ms
 -- Virtual memory used : 1394984 KiB
 -- Resident memory used : 1390828 KiB
+
 --------------------------------------------------------------------
 
 N=5  buffer size=3
