@@ -3,6 +3,7 @@ package io.github.contractautomata.care.runnableOrchestration.choice;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
@@ -39,7 +40,7 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 
 		//receive message from orchestrator on whether to choose or skip
 		String action = (String) oin.readObject();
-		
+
 		System.out.println("received "+action);
 		
 		if (action==null) //skip
@@ -47,12 +48,15 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 		
 		//receiving the possible choices
 		String[] toChoose = (String[]) oin.readObject();
-		
+
+		System.out.println("received "+ Arrays.toString(toChoose));
+
 		String select =select(currentState, toChoose);
-		
+
+		System.out.println("replying "+ select);
 		//sending the selected choice
 		oout.writeObject(select);
-		oout.flush();		
+		oout.flush();
 	}
 
 

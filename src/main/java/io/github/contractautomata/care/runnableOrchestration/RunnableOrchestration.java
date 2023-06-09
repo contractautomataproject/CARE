@@ -34,7 +34,6 @@ public abstract class RunnableOrchestration implements Runnable {
 	public final static String choice_msg = "ORC_CHOICE";
 	public final static String stop_choice = "CHOICE_STOP";
 	public final static String check_msg = "ORC_CHECK";
-
 	private final List<Integer> ports;
 	private final List<String> addresses;
 	private final Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> contract;

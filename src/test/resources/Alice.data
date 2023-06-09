@@ -1,0 +1,8 @@
+Rank: 1
+Initial state: [0]
+Final states: [[Drink]]
+Transitions: 
+([InsDollar],[?tea],[Drink])
+([InsEuro],[?coffee],[Drink])
+([0],[!dollar],[InsDollar])
+([0],[!euro],[InsEuro])
