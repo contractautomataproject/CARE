@@ -40,6 +40,12 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 		generator = new Random();
 	}
 
+	public DictatorialChoiceRunnableOrchestration(Predicate<CALabel> pred,
+												  Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>, CALabel>> orchestration,
+												  List<String> hosts, List<Integer> port, OrchestratorAction act) throws UnknownHostException, ClassNotFoundException, IOException {
+		super(pred, orchestration, hosts, port,act);
+		generator = new Random();
+	}
 	
 	@Override
 	/**
@@ -69,7 +75,7 @@ public class DictatorialChoiceRunnableOrchestration extends RunnableOrchestratio
 	
 	@Override
 	public String getChoiceType() {
-		return "Distributed";
+		return "Dictatorial";
 	}
 
 }

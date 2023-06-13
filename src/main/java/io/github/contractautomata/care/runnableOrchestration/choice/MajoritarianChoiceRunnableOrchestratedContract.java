@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import io.github.contractautomata.care.exceptions.ContractViolationException;
 import io.github.contractautomata.care.runnableOrchestration.RunnableOrchestratedContract;
 import io.github.contractautomata.care.runnableOrchestration.RunnableOrchestration;
 import io.github.contractautomata.care.runnableOrchestration.actions.OrchestratedAction;
@@ -67,9 +68,11 @@ public class MajoritarianChoiceRunnableOrchestratedContract extends RunnableOrch
 	 * @return the choice made to be communicated to the orchestrator
 	 */
 	public String select(State<String> currentState, String[] toChoose) {
-		if (currentState.isFinalState()&&generator.nextInt(2)==0) //50% chance of terminating
+		if (currentState.isFinalState()&&(toChoose.length==0||generator.nextInt(2)==0)) //50% chance of terminating
 			return RunnableOrchestration.stop_choice; 
-		else		
+		else if (!currentState.isFinalState()&&toChoose.length==0)
+			throw new RuntimeException();
+		else
 			return toChoose[generator.nextInt(toChoose.length)];
 	}
 

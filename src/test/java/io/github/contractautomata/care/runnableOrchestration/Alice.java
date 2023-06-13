@@ -20,7 +20,7 @@ public class Alice {
 	public Integer coffee(String arg) {
 		if (arg!=null) {
 			System.out.println("Alice has received the payload "+arg);
-			return null;
+			return 2;
 		}
 		else 
 		{

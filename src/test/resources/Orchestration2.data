@@ -1,0 +1,6 @@
+Rank: 2
+Initial state: [0,0]
+Final states: [[Drink],[Stop]]
+Transitions:
+([InsEuro,One],[!coffee,?coffee],[Drink,Stop])
+([0,0],[!euro,-],[InsEuro,One])

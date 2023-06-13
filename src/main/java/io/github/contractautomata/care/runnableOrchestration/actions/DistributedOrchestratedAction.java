@@ -44,13 +44,12 @@ public class DistributedOrchestratedAction implements OrchestratedAction {
 				//if is a match communicate with the requester
 				ServerSocket ss = new ServerSocket(0);//find a port available
 				oout.writeObject(ss.getLocalPort());//communicate the port to the orchestrator
-				
+
 				try (	Socket socket = ss.accept();
 						ObjectInputStream osin = new ObjectInputStream(socket.getInputStream());
-						ObjectOutputStream osout = new ObjectOutputStream(socket.getOutputStream());){
+						ObjectOutputStream osout = new ObjectOutputStream(socket.getOutputStream())){
 
 					osout.flush();
-
 					//receive request from the requester and invoke offer method
 					Object offer=m1.invoke(rc.getService(),c.cast(osin.readObject()));
 

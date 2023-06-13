@@ -25,6 +25,6 @@ public class DictatorialChoiceRunnableOrchestratedContract extends RunnableOrche
 
 	@Override
 	public String getChoiceType() {
-		return "Distributed";
+		return "Dictatorial";
 	}
 }

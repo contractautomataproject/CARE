@@ -15,9 +15,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	private final Object service;
 	private final OrchestratedAction act;
 	private final int timeout=600000;//10 minutes
+
 
 	public RunnableOrchestratedContract(Automaton<String, Action, State<String>, ModalTransition<String,Action,State<String>,CALabel>> contract,
 										int port, Object service, OrchestratedAction act) {
@@ -71,8 +75,8 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	
 	@Override
 	public void run() {
-		try (ServerSocket servsock =  ServerSocketFactory.getDefault().createServerSocket(port))
-		{
+		try	(ServerSocketChannel server = ServerSocketChannel.open()){
+			server.bind(new InetSocketAddress(port));
 			while (true) {
 				new Thread() {
 					private final Socket socket;
@@ -83,7 +87,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
                     private io.github.contractautomata.catlib.automaton.state.State<String> currentState;
 
 					{
-						socket = servsock.accept();
+						socket = server.accept().socket();
 						socket.setSoTimeout(timeout);
                         contractCopy =new Automaton<>(new RelabelingOperator<String,TypedCALabel>
                                 (TypedCALabel::new,l->l,s->s.isInitial(),s->s.isFinalState())
@@ -131,6 +135,7 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 										.stream()
 										.filter(tr->tr.getLabel().getAction().getLabel().equals(action))
 										.findAny()
+
 										.orElseThrow(UnsupportedOperationException::new);
 
 								try {
@@ -179,10 +184,10 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 	public abstract String getChoiceType();
 	
 	
-	private void check(ObjectInputStream oin, ObjectOutputStream oout) throws ClassNotFoundException, IOException {
+	private synchronized void check(ObjectInputStream oin, ObjectOutputStream oout) throws ClassNotFoundException, IOException {
 		String orcChoiceType = (String) oin.readObject();
 		String orcActType = (String) oin.readObject();
-		
+
 		if (orcChoiceType.equals(this.getChoiceType())&&orcActType.equals(this.act.getActionType()))
 			oout.writeObject(RunnableOrchestration.ack_msg);
 		else {
