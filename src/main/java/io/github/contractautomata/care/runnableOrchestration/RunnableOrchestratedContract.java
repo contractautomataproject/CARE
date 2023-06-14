@@ -19,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
@@ -160,7 +161,8 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 							ContractViolationException re = new ContractViolationException(socket.getRemoteSocketAddress());
 							re.addSuppressed(e);
 							throw new RuntimeException(e);
-						} catch (Exception e) {
+						}
+						catch (Exception e) {
 							RuntimeException re = new RuntimeException();
 							re.addSuppressed(e);
 							throw new RuntimeException(e);
@@ -171,7 +173,12 @@ public abstract class RunnableOrchestratedContract implements Runnable {
 					}
 				}.start();
 			}
-		} catch (IOException e2) {
+		}
+		catch (ClosedByInterruptException e) {
+			//at the end of a test, the service is interrupted
+			System.out.println("The service at port "+this.getPort()+" received an interruption.");
+		}
+		catch (IOException e2) {
 			RuntimeException re = new RuntimeException();
 			re.addSuppressed(e2);
 			throw new RuntimeException(e2);

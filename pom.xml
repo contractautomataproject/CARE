@@ -7,7 +7,7 @@
 	<groupId>io.github.contractautomataproject</groupId>
 	<artifactId>care</artifactId>
 	<url>https://github.com/contractautomataproject/CARE</url>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<distributionManagement>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>io.github.contractautomataproject</groupId>
 			<artifactId>catlib</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 		</dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -60,4 +60,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
+	<sourceDirectory>src/main/java</sourceDirectory>
+	<testSourceDirectory>src/test/java</testSourceDirectory>
+	</build>
 </project>
