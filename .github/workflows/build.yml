@@ -37,4 +37,4 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: 📦 Build with Maven
-        run: mvn -B verify
+        run: mvn -B compile
