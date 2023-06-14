@@ -35,15 +35,14 @@ There are three queries used to generate the tests (under the folder `/src/test`
 
 The file `model_testing_roc_distributed_offerer` has been used for testing the interactions between 
 two RunnableOrchestratedContract in a distributed match. 
-In this case the tester is represented by the orchestration and on of the two interactive services, 
+In this case the tester is represented by the orchestrator and one of the two interactive services, 
 i.e., the requester in the match. 
 The query has been used to generate the test in 
 `DictatorialDistributedRunnableOrchestratedContract_DistributedMatchOfferer_Test.java`.
 
-
 The file `model_testing_roc_distributed_requester` has been used for testing the interactions between
 two RunnableOrchestratedContract in a distributed match.
-In this case the tester is represented by the orchestration and on of the two interactive services,
+In this case the tester is represented by the orchestrator and one of the two interactive services,
 i.e., the offerer in the match.
 The query has been used to generate the test in
 `DictatorialDistributedRunnableOrchestratedContract_DistributedMatchRequester_Test.java`.
@@ -66,16 +65,12 @@ The `RunnableOrchestratedContract` automaton with traceability is displayed belo
 [RunnableOrchestratedContract](https://raw.githubusercontent.com/contractautomataproject/CARE/7bdcef1ddb529af51fabbb65ad31358e41e64a2b/src/spec/uppaal/RunnableOrchestratedContract.svg)
 <img src="https://raw.githubusercontent.com/contractautomataproject/CARE/master/src/spec/uppaal/RunnableOrchestratedContract.svg?sanitize=true">
 
-
-
 The `RunnableOrchestration` automaton with traceability is displayed below.
 
 [RunnableOrchestration](https://github.com/contractautomataproject/CARE/raw/master/src/spec/uppaal/RunnableOrchestration.svg?sanitize=true)
 <img src="https://raw.githubusercontent.com/contractautomataproject/CARE/7bdcef1ddb529af51fabbb65ad31358e41e64a2b/src/spec/uppaal/RunnableOrchestration.svg">
 
-
 The `SocketTimeout` automaton with traceability is displayed below.
-
 
 [SocketTimeout](https://github.com/contractautomataproject/CARE/raw/master/src/spec/uppaal/SocketTimeout.svg?sanitize=true)
 <img src="https://raw.githubusercontent.com/contractautomataproject/CARE/7bdcef1ddb529af51fabbb65ad31358e41e64a2b/src/spec/uppaal/SocketTimeout.svg">
