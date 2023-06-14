@@ -1,6 +1,5 @@
 package io.github.contractautomata.care.runnableOrchestration;
 
-import io.github.contractautomata.care.runnableOrchestration.actions.CentralisedOrchestratorAction;
 import io.github.contractautomata.care.runnableOrchestration.actions.DistributedOrchestratorAction;
 import io.github.contractautomata.care.runnableOrchestration.choice.MajoritarianChoiceRunnableOrchestration;
 import io.github.contractautomata.catlib.automaton.label.CALabel;
@@ -22,6 +21,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 
 public class MajoritarianDistributedRunnableOrchestrationTest {
+
     String dir = System.getProperty("user.dir")+ File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator;
 
     AutDataConverter<CALabel> adc = new AutDataConverter<>(CALabel::new);
@@ -45,10 +45,11 @@ public class MajoritarianDistributedRunnableOrchestrationTest {
     //* the executed trace is (!euro,-)(?coffee,!coffee)
     private void uppaal_alice( ObjectInputStream oin, ObjectOutputStream oout) throws IOException, ClassNotFoundException {
         String msg;
+        //offer type to offerer: 0
         msg = (String) oin.readObject();
         assertEquals(msg, "euro");
-        msg = (String) oin.readObject(); // reading  distributed action type
-        assertEquals(msg,"offer");
+        msg = (String) oin.readObject();
+        assertEquals(msg,"offer"); // reading  distributed action type
         msg = (String) oin.readObject(); // reading payload distributed action
         assertEquals(msg,null);
         oout.writeObject(null);
@@ -56,11 +57,10 @@ public class MajoritarianDistributedRunnableOrchestrationTest {
         // action to offerer: 0
         msg = (String) oin.readObject();
         assertEquals(msg, "coffee");
-        msg = (String) oin.readObject(); // reading  distributed action type
-        assertEquals(msg,"match");
-        oout.writeObject("port");
+        msg = (String) oin.readObject();
+        assertEquals(msg,"match"); // reading  distributed action type
+        oout.writeObject(8080); //port
         oout.flush();
-
         msg = (String) oin.readObject();
         assertEquals(msg,RunnableOrchestration.stop_msg);
     }
@@ -69,10 +69,10 @@ public class MajoritarianDistributedRunnableOrchestrationTest {
         String msg;
         msg = (String) oin.readObject();
         assertEquals(msg, "coffee");
-        msg = (String)   oin.readObject(); // reading  distributed action type
-        assertEquals(msg,"address");
-        msg = (String) oin.readObject(); // reading  port
-        assertEquals(msg,"port");
+        msg = (String) oin.readObject();
+        assertEquals(msg,null); // reading  address (null)
+        int port = (Integer) oin.readObject(); // reading  port
+        assertEquals(port,8080);
         oout.writeObject(null);
         oout.flush();
 

@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+
+int __reach__ = 0;
+int __single__ = 0;
+
+int steps[15];
+int step=0;
+
+const int queueSize=3;      //size of each buffer
+const int N = 2;            //number of services
+const int timeout=15;     //socket read timeout
+
+//probabilities 
+const int pstop = 25;
+const int pchoice = 1;
+const int pnochoice = 0;
+const int paction = 75;
+
+// exponential distribution rates
+const double read = 5.0;
+const double write = 5.0;
+
+//actions and choics IDs
+const int DICTATORIAL_CHOICE = 1;
+const int MAJORITARIAN_CHOICE = 2; 
+const int CENTRALISED_ACTION = 3;
+const int DISTRIBUTED_ACTION = 4;
+const int CENTRALISED_OFFER = 5;
+const int CENTRALISED_MATCH = 6;
+const int DISTRIBUTED_OFFER = 7;
+const int DISTRIBUTED_MATCH_OFFERER = 8;
+const int DISTRIBUTED_MATCH_REQUESTER = 8;
+
+
+int action;            //global action configuration
+int choice;            //global choice configuration
+
+typedef int[0,N-1] id_t;   //IDs of RunnableOrchestratedContract
+
+
+//signals IDs
+const int ORC_CHECK=1;
+const int ORC_STOP=2;
+const int ORC_CHOICE=3;
+const int CHOICE_STOP=4;
+const int ACK=5;
+const int ERROR=6;
+const int SKIP=7;
+const int CHOICES=8;
+const int SERVICE_CHOICE=9;
+const int ACTION=10;
+const int REQUEST=11;
+const int OFFER=12;
+const int TYPEOFFER=13;
+const int TYPEMATCH=14;
+const int PORT=15;
+const int NOPAYLOAD=16;
+const int ADDRESS=17;
+
+
+//communication buffers
+int orc2services[N][queueSize];  
+int services2orc[N][queueSize];  
+int requester2offerer;
+int offerer2requester;
+
+//signals
+broadcast chan reset[N];
+
+const int nil = 0;	 //empty position in the buffer
+
+
+//return true if there exists a full buffer
+bool existsFull(){
+    int i=0;
+    int j=0;
+    for (i=0;i&lt;N;i++){
+        bool fullOrc=true;
+        bool fullServ=true;
+
+        for (j=0;j&lt;queueSize;j++){
+            if (orc2services[i][j]==nil)  
+                fullOrc=false;
+            if (services2orc[i][j]==nil)
+                fullServ=false;
+        }
+        if (fullOrc || fullServ)
+            return true;
+    }
+    return false;
+}
+
+
+//return true if all buffers are empty
+bool allEmpty(){
+    int i=0;
+    int j=0;
+    for (i=0;i&lt;N;i++){
+        for (j=0;j&lt;queueSize;j++){
+            if (orc2services[i][j]!=nil || services2orc[i][j]!=nil)
+                return false;
+        }
+    }
+    return true;
+}</declaration>
+	<template>
+		<name x="5" y="5">RunnableOrchestration</name>
+		<declaration>// Place local declarations here.
+int i=0;
+int d;
+int involved;
+int offerer;
+int requester;
+
+void initialize(int conf){
+    int i;
+    int id;
+    for (id:=0;id&lt;N;id++){
+        for (i:=0;i&lt;queueSize;i++)
+        {    
+            orc2services[id][i]:=nil;
+            services2orc[id][i]:=nil;
+        }
+    }
+    requester2offerer=nil;
+    offerer2requester=nil;
+
+    if (conf==0){
+        choice=DICTATORIAL_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==1){
+        choice=DICTATORIAL_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    } else if (conf==2){
+        choice=MAJORITARIAN_CHOICE;
+        action=CENTRALISED_ACTION;
+    } else if (conf==3){
+        choice=MAJORITARIAN_CHOICE;
+        action=DISTRIBUTED_ACTION;
+    }
+}
+
+void enqueue(int id,int ide_sig)
+{
+    int i;
+    int s=ide_sig;
+    for (i:=0;i&lt;queueSize-1;i++)
+    {    
+        orc2services[id][i]:=orc2services[id][i+1]; //enqueue in the last position and shift down the other messages
+    }
+    orc2services[id][queueSize-1]:=s;
+}
+
+bool isEmpty(int id)
+{
+    return services2orc[id][queueSize-1]==nil; 
+}
+
+bool isFull(int id)
+{
+    return orc2services[id][0]!=nil; 
+}
+
+int available(int id)
+{
+  int count=0;
+  int i;
+  for (i:=0;i&lt;queueSize;i++)
+  {    
+    if (orc2services[id][i]==nil)
+        count++;
+  }
+  return count;
+}
+
+int dequeue(int id)
+{
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (services2orc[id][i]!=nil)
+        {
+			int e=services2orc[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			services2orc[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
+}</declaration>
+		<location id="id0" x="-68442" y="-68017">
+			<name x="-68501" y="-68051">CheckCompatibility</name>
+			<label kind="exponentialrate" x="-68476" y="-68008">write</label>
+		</location>
+		<location id="id1" x="-68442" y="-68127">
+			<committed/>
+		</location>
+		<location id="id2" x="-68442" y="-67600">
+			<name x="-68434" y="-67634">Error</name>
+		</location>
+		<location id="id3" x="-68442" y="-67855">
+			<label kind="exponentialrate" x="-68476" y="-67847">read</label>
+		</location>
+		<location id="id4" x="-68442" y="-67745">
+			<committed/>
+		</location>
+		<location id="id5" x="-67966" y="-68017">
+			<name x="-67976" y="-68051">Choice</name>
+			<committed/>
+		</location>
+		<location id="id6" x="-68305" y="-67702">
+			<name x="-68297" y="-67727">Action</name>
+			<committed/>
+		</location>
+		<location id="id7" x="-68323" y="-68017">
+			<name x="-68340" y="-68051">Start</name>
+			<committed/>
+		</location>
+		<location id="id8" x="-67762" y="-68017">
+			<name x="-67855" y="-68042">SendingChoice</name>
+			<label kind="exponentialrate" x="-67804" y="-68017">write</label>
+		</location>
+		<location id="id9" x="-68178" y="-67702">
+			<committed/>
+		</location>
+		<location id="id10" x="-68306" y="-67394">
+			<label kind="exponentialrate" x="-68348" y="-67405">write</label>
+		</location>
+		<location id="id11" x="-68076" y="-67864">
+			<name x="-68086" y="-67898">Stop</name>
+			<committed/>
+		</location>
+		<location id="id12" x="-67966" y="-67864">
+			<name x="-68034" y="-67898">SendingTermination</name>
+			<label kind="exponentialrate" x="-68008" y="-67864">write</label>
+		</location>
+		<location id="id13" x="-67779" y="-67796">
+			<name x="-67770" y="-67813">Terminated</name>
+		</location>
+		<location id="id14" x="-67583" y="-68017">
+			<label kind="exponentialrate" x="-67609" y="-68008">write</label>
+		</location>
+		<location id="id15" x="-67422" y="-68017">
+			<label kind="exponentialrate" x="-67422" y="-68008">read</label>
+		</location>
+		<location id="id16" x="-68306" y="-67915">
+			<committed/>
+		</location>
+		<location id="id17" x="-68187" y="-68017">
+			<label kind="exponentialrate" x="-68212" y="-68008">write</label>
+		</location>
+		<location id="id18" x="-68059" y="-67702">
+			<name x="-68102" y="-67736">CentralisedOffer</name>
+			<label kind="exponentialrate" x="-68068" y="-67694">write</label>
+		</location>
+		<location id="id19" x="-68033" y="-67568">
+			<name x="-68092" y="-67602">CentralisedMatch</name>
+			<label kind="exponentialrate" x="-68051" y="-67558">write</label>
+		</location>
+		<location id="id20" x="-67854" y="-67702">
+			<label kind="exponentialrate" x="-67864" y="-67694">read</label>
+		</location>
+		<location id="id21" x="-67820" y="-67568">
+			<label kind="exponentialrate" x="-67830" y="-67558">read</label>
+		</location>
+		<location id="id22" x="-67625" y="-67567">
+			<label kind="exponentialrate" x="-67643" y="-67558">write</label>
+		</location>
+		<location id="id23" x="-67421" y="-67566">
+			<label kind="exponentialrate" x="-67430" y="-67558">read</label>
+		</location>
+		<location id="id24" x="-67421" y="-67719">
+			<label kind="exponentialrate" x="-67431" y="-67699">write</label>
+		</location>
+		<location id="id25" x="-68306" y="-67276">
+			<committed/>
+		</location>
+		<location id="id26" x="-68272" y="-67362">
+			<name x="-68289" y="-67396">DistributedOffer</name>
+			<label kind="exponentialrate" x="-68282" y="-67342">write</label>
+		</location>
+		<location id="id27" x="-68212" y="-67277">
+			<name x="-68272" y="-67260">DistributedMatch</name>
+			<label kind="exponentialrate" x="-68229" y="-67303">write</label>
+		</location>
+		<location id="id28" x="-68017" y="-67362">
+			<label kind="exponentialrate" x="-68017" y="-67354">read</label>
+		</location>
+		<location id="id29" x="-67999" y="-67277">
+			<label kind="exponentialrate" x="-68034" y="-67303">write</label>
+		</location>
+		<location id="id30" x="-67770" y="-67277">
+			<label kind="exponentialrate" x="-67804" y="-67303">read</label>
+		</location>
+		<location id="id31" x="-67609" y="-67277">
+			<label kind="exponentialrate" x="-67643" y="-67303">write</label>
+		</location>
+		<location id="id32" x="-67422" y="-67277">
+			<label kind="exponentialrate" x="-67464" y="-67303">read</label>
+		</location>
+		<location id="id33" x="-67422" y="-67489">
+			<committed/>
+		</location>
+		<location id="id34" x="-67422" y="-67889">
+			<committed/>
+		</location>
+		<location id="id35" x="-67668" y="-67702">
+			<committed/>
+		</location>
+		<location id="id36" x="-68034" y="-68017">
+			<committed/>
+		</location>
+		<location id="id37" x="-67779" y="-67864">
+			<committed/>
+		</location>
+		<location id="id38" x="-67668" y="-68017">
+			<committed/>
+		</location>
+		<location id="id39" x="-67490" y="-68017">
+			<committed/>
+		</location>
+		<branchpoint id="id40" x="-68272" y="-67276">
+		</branchpoint>
+		<branchpoint id="id41" x="-68135" y="-67702">
+		</branchpoint>
+		<branchpoint id="id42" x="-68306" y="-67864">
+		</branchpoint>
+		<branchpoint id="id43" x="-68263" y="-68017">
+		</branchpoint>
+		<init ref="id1"/>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id39"/>
+			<label kind="guard" x="-67617" y="-68093">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="synchronisation" x="-67575" y="-68076">reset[i]!</label>
+			<label kind="assignment" x="-67626" y="-68059">enqueue(i,CHOICES)</label>
+			<label kind="testcode">//choice options to: $(ror.i)</label>
+			<nail x="-67541" y="-68042"/>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-67566" y="-68008">i&lt;involved-1</label>
+			<label kind="assignment" x="-67566" y="-68000">i++</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-67481" y="-68051">i==involved-1</label>
+			<label kind="assignment" x="-67456" y="-68034">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id38"/>
+			<label kind="guard" x="-67779" y="-67983">i&gt;=involved &amp;&amp; i&lt;N &amp;&amp;!isFull(i)</label>
+			<label kind="synchronisation" x="-67779" y="-67966">reset[i]!</label>
+			<label kind="assignment" x="-67779" y="-67949">enqueue(i,SKIP)</label>
+			<label kind="testcode">//skip to: $(ror.i)</label>
+			<nail x="-67762" y="-67983"/>
+			<nail x="-67677" y="-67983"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id38"/>
+			<label kind="guard" x="-67787" y="-68102">i&lt;involved &amp;&amp; !isFull(i)</label>
+			<label kind="synchronisation" x="-67745" y="-68085">reset[i]!</label>
+			<label kind="assignment" x="-67804" y="-68068">enqueue(i,ORC_CHOICE)</label>
+			<label kind="testcode">//choice to: $(ror.i)</label>
+			<nail x="-67762" y="-68051"/>
+			<nail x="-67677" y="-68051"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id8"/>
+			<label kind="guard" x="-67728" y="-68034">i&lt;N-1</label>
+			<label kind="assignment" x="-67711" y="-68017">i++</label>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-67650" y="-68034">i==N-1</label>
+			<label kind="assignment" x="-67651" y="-68017">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-67872" y="-67881">i&lt;N-1</label>
+			<label kind="assignment" x="-67830" y="-67881">i++</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-67770" y="-67847">i==N-1</label>
+			<label kind="assignment" x="-67770" y="-67830">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id37"/>
+			<label kind="guard" x="-67949" y="-67847">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="synchronisation" x="-67949" y="-67830">reset[i]!</label>
+			<label kind="assignment" x="-67966" y="-67813">enqueue(i,ORC_STOP)</label>
+			<nail x="-67966" y="-67813"/>
+			<nail x="-67804" y="-67813"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-68153" y="-68059">i&lt;N-1</label>
+			<label kind="assignment" x="-68102" y="-68059">i++</label>
+			<nail x="-68059" y="-68042"/>
+			<nail x="-68153" y="-68042"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-68025" y="-68042">i==N-1</label>
+			<label kind="assignment" x="-68017" y="-68017">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id36"/>
+			<label kind="guard" x="-68153" y="-68017">i&lt;N &amp;&amp; !isFull(i)</label>
+			<label kind="synchronisation" x="-68136" y="-68000">reset[i]!</label>
+			<label kind="assignment" x="-68178" y="-67983">enqueue(i,ORC_CHOICE)</label>
+			<label kind="testcode">//choice to: $(ror.i)</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-68289" y="-68136">d==SERVICE_CHOICE &amp;&amp; i==involved-1</label>
+			<label kind="assignment" x="-68288" y="-68119">d=nil,i=0,involved=0</label>
+			<nail x="-67388" y="-67889"/>
+			<nail x="-67388" y="-68119"/>
+			<nail x="-68306" y="-68119"/>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id16"/>
+			<label kind="probability" x="-68280" y="-67915">pnochoice</label>
+			<nail x="-68263" y="-67915"/>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-67745" y="-67770">d==OFFER</label>
+			<label kind="assignment" x="-67702" y="-67753">d=nil</label>
+			<nail x="-67668" y="-67770"/>
+			<nail x="-68322" y="-67770"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-67838" y="-67736">!isEmpty(offerer)</label>
+			<label kind="synchronisation" x="-67836" y="-67719">reset[offerer]!</label>
+			<label kind="assignment" x="-67836" y="-67702">d=dequeue(offerer),
+offerer=nil</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-67677" y="-67889">d==SERVICE_CHOICE &amp;&amp; i&lt;involved-1</label>
+			<label kind="assignment" x="-67482" y="-67872">d=nil,i++</label>
+			<nail x="-67532" y="-67889"/>
+			<nail x="-67532" y="-67966"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-67490" y="-67983">i&lt;involved&amp;&amp;
+!isEmpty(i)</label>
+			<label kind="synchronisation" x="-67481" y="-67949">reset[i]!</label>
+			<label kind="assignment" x="-67507" y="-67932">d=dequeue(i)</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-67728" y="-67507">d==ACK</label>
+			<label kind="assignment" x="-67728" y="-67490">d=nil</label>
+			<nail x="-68323" y="-67489"/>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-67549" y="-67447">!isEmpty(requester)</label>
+			<label kind="synchronisation" x="-67549" y="-67430">reset[requester]!</label>
+			<label kind="assignment" x="-67566" y="-67413">d=dequeue(requester),
+requester=nil</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id32"/>
+			<label kind="guard" x="-67592" y="-67328">available(requester)&gt;=2
+&amp;&amp;d==PORT</label>
+			<label kind="synchronisation" x="-67591" y="-67294">reset[requester]!</label>
+			<label kind="assignment" x="-67600" y="-67269">enqueue(requester,ADDRESS),
+enqueue(requester,PORT),
+d=nil,offerer=nil</label>
+			<label kind="testcode">//address and port to requester: $(ror.requester)</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-67753" y="-67311">!isEmpty(offerer)</label>
+			<label kind="synchronisation" x="-67752" y="-67294">reset[offerer]!</label>
+			<label kind="assignment" x="-67753" y="-67277">d=dequeue(offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-67949" y="-67311">!isFull(offerer)</label>
+			<label kind="synchronisation" x="-67949" y="-67294">reset[offerer]!</label>
+			<label kind="assignment" x="-67983" y="-67276">enqueue(offerer,TYPEMATCH)</label>
+			<label kind="testcode">//match type to offerer: $(ror.offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-68178" y="-67311">!isFull(requester)</label>
+			<label kind="synchronisation" x="-68178" y="-67294">reset[requester]!</label>
+			<label kind="assignment" x="-68196" y="-67276">enqueue(requester,ACTION)</label>
+			<label kind="testcode">//action to requester: $(ror.requester)</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-68127" y="-67481">!isEmpty(offerer)</label>
+			<label kind="synchronisation" x="-68110" y="-67464">reset[offerer]!</label>
+			<label kind="assignment" x="-68119" y="-67447">d=dequeue(offerer),d=nil,
+offerer=nil</label>
+			<nail x="-68018" y="-67490"/>
+			<nail x="-68323" y="-67489"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-68255" y="-67379">available(offerer)&gt;=2</label>
+			<label kind="synchronisation" x="-68119" y="-67379">reset[offerer]!</label>
+			<label kind="assignment" x="-68221" y="-67362">enqueue(offerer,TYPEOFFER),
+enqueue(offerer,NOPAYLOAD)</label>
+			<label kind="testcode">//offer type to offerer: $(ror.offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id27"/>
+			<label kind="probability" x="-68255" y="-67294">1</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id26"/>
+			<label kind="probability" x="-68272" y="-67319">1</label>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id40"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id25"/>
+			<label kind="select" x="-68408" y="-67379">n:int[0,N-2]</label>
+			<label kind="guard" x="-68399" y="-67362">!isFull(n)</label>
+			<label kind="synchronisation" x="-68399" y="-67345">reset[n]!</label>
+			<label kind="assignment" x="-68425" y="-67328">requester=n+1,
+offerer=n,
+enqueue(offerer,
+        ACTION)</label>
+			<label kind="testcode">// action to offerer: $(ror.offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-67626" y="-67804">!isFull(requester)&amp;&amp;d==OFFER</label>
+			<label kind="synchronisation" x="-67541" y="-67787">reset[offerer]!</label>
+			<label kind="assignment" x="-67617" y="-67770">enqueue(requester,OFFER),
+requester=nil,d=nil</label>
+			<label kind="testcode">//requester: $(ror.requester)</label>
+			<nail x="-67422" y="-67770"/>
+			<nail x="-68322" y="-67770"/>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="guard" x="-67532" y="-67702">!isEmpty(offerer)</label>
+			<label kind="synchronisation" x="-67524" y="-67685">reset[offerer]!</label>
+			<label kind="assignment" x="-67549" y="-67668">d=dequeue(offerer),
+offerer=nil</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id23"/>
+			<label kind="guard" x="-67591" y="-67610">available(offerer)&gt;=2
+&amp;&amp;d==REQUEST</label>
+			<label kind="synchronisation" x="-67600" y="-67566">reset[offerer]!</label>
+			<label kind="assignment" x="-67600" y="-67549">enqueue(offerer,ACTION),
+enqueue(offerer,REQUEST)</label>
+			<label kind="testcode">//matching offerer: $(ror.offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id22"/>
+			<label kind="guard" x="-67804" y="-67609">!isEmpty(requester)</label>
+			<label kind="synchronisation" x="-67804" y="-67592">reset[requester]!</label>
+			<label kind="assignment" x="-67802" y="-67568">d=dequeue(requester)</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id21"/>
+			<label kind="select" x="-67906" y="-67592">n:int[0,N-2]</label>
+			<label kind="guard" x="-68017" y="-67592">available(n)&gt;=2</label>
+			<label kind="synchronisation" x="-67949" y="-67609">reset[n]!</label>
+			<label kind="assignment" x="-68000" y="-67566">requester=n,offerer=n+1,
+enqueue(requester,ACTION),
+enqueue(requester,SKIP)</label>
+			<label kind="testcode">//requester: $(ror.requester)</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id20"/>
+			<label kind="select" x="-67940" y="-67719">n:int[0,N-1]</label>
+			<label kind="guard" x="-68042" y="-67719">available(n)&gt;=2</label>
+			<label kind="synchronisation" x="-68025" y="-67702">reset[n]!</label>
+			<label kind="assignment" x="-68025" y="-67685">offerer=n,
+enqueue(offerer,ACTION),
+enqueue(offerer,NOPAYLOAD)</label>
+			<label kind="testcode">//centralised offerer $(ror.offerer)</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id19"/>
+			<label kind="probability" x="-68118" y="-67585">1</label>
+			<nail x="-68135" y="-67568"/>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id18"/>
+			<label kind="probability" x="-68118" y="-67719">1</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id41"/>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id17"/>
+			<label kind="probability" x="-68254" y="-68034">pchoice</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id6"/>
+			<label kind="probability" x="-68306" y="-67813">paction</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id11"/>
+			<label kind="probability" x="-68297" y="-67864">pstop</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id42"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id16"/>
+			<label kind="guard" x="-68246" y="-68085">choice==DICTATORIAL_CHOICE</label>
+			<nail x="-67966" y="-68068"/>
+			<nail x="-68306" y="-68068"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="assignment" x="-68058" y="-67864">i=0</label>
+			<label kind="testcode">//TERMINATION</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-68416" y="-67447">action==
+DISTRIBUTED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-68296" y="-67702">action==
+CENTRALISED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id8"/>
+			<label kind="select" x="-67932" y="-68034">n:int[1,N]</label>
+			<label kind="guard" x="-67949" y="-68017">choice==
+MAJORITARIAN_CHOICE</label>
+			<label kind="assignment" x="-67949" y="-67983">involved=n</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-68374" y="-68034">i==N</label>
+			<label kind="assignment" x="-68374" y="-68017">i=0</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id43"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-68442" y="-67677">d==ERROR</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-68425" y="-67762">d==ACK</label>
+			<label kind="assignment" x="-68425" y="-67745">i++,d=nil</label>
+			<nail x="-68357" y="-67745"/>
+			<nail x="-68357" y="-67966"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-68476" y="-67821">!isEmpty(i)</label>
+			<label kind="synchronisation" x="-68476" y="-67804">reset[i]!</label>
+			<label kind="assignment" x="-68484" y="-67787">d=dequeue(i)</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-68510" y="-67974">i&lt;N &amp;&amp; available(i)&gt;=3</label>
+			<label kind="synchronisation" x="-68501" y="-67957">reset[i]!</label>
+			<label kind="assignment" x="-68527" y="-67940">enqueue(i,ORC_CHECK), 
+enqueue(i,choice),
+enqueue(i,action)</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="select" x="-68442" y="-68101">conf:int[0,3]</label>
+			<label kind="assignment" x="-68442" y="-68084">initialize(conf),i=0</label>
+		</transition>
+	</template>
+	<template>
+		<name>RunnableOrchestratedContract</name>
+		<parameter>const id_t id</parameter>
+		<declaration>int d1;
+int d2;
+int address;
+
+int steps[15];
+
+
+void enqueue(int ide_sig)
+{
+    int i;
+    int s=ide_sig;
+    for (i:=0;i&lt;queueSize-1;i++)
+    {    
+        services2orc[id][i]:=services2orc[id][i+1]; //enqueue in the last position and shift down the other messages
+    }
+    services2orc[id][queueSize-1]:=s;
+
+}
+
+bool isEmpty()
+{
+    return orc2services[id][queueSize-1]==nil;
+}
+
+bool isFull()
+{
+    return services2orc[id][0]!=nil; 
+}
+
+int available()
+{
+  int count=0;
+  int i;
+  for (i:=0;i&lt;queueSize;i++)
+  {    
+    if (services2orc[id][i]==nil)
+        count++;
+  }
+  return count;
+}
+
+int dequeue()
+{
+    int i;
+    for (i:=0;i&lt;queueSize;i++)
+    {    
+        if (orc2services[id][i]!=nil)
+        {
+			int e=orc2services[id][i];   //remove and return the first encountered message starting from zero, no need to shift
+			orc2services[id][i]=nil;
+            return e;
+        }
+    }
+    return nil;
+}</declaration>
+		<location id="id44" x="-67082" y="-67014">
+			<name x="-67099" y="-67048">Ready</name>
+			<label kind="exponentialrate" x="-67082" y="-67005">read</label>
+		</location>
+		<location id="id45" x="-66930" y="-67014">
+			<committed/>
+		</location>
+		<location id="id46" x="-66930" y="-67218">
+			<label kind="exponentialrate" x="-66963" y="-67209">write</label>
+		</location>
+		<location id="id47" x="-66682" y="-67014">
+			<committed/>
+		</location>
+		<location id="id48" x="-66929" y="-66810">
+			<committed/>
+		</location>
+		<location id="id49" x="-66419" y="-67014">
+			<label kind="exponentialrate" x="-66427" y="-67005">read</label>
+		</location>
+		<location id="id50" x="-66283" y="-67014">
+			<committed/>
+		</location>
+		<location id="id51" x="-66283" y="-67183">
+			<label kind="exponentialrate" x="-66293" y="-67163">read</label>
+		</location>
+		<location id="id52" x="-66283" y="-67269">
+			<label kind="exponentialrate" x="-66325" y="-67269">write</label>
+		</location>
+		<location id="id53" x="-66676" y="-66810">
+			<label kind="exponentialrate" x="-66691" y="-66801">read</label>
+		</location>
+		<location id="id54" x="-66691" y="-66691">
+			<label kind="exponentialrate" x="-66708" y="-66682">read</label>
+		</location>
+		<location id="id55" x="-66538" y="-66810">
+			<label kind="exponentialrate" x="-66555" y="-66801">write</label>
+		</location>
+		<location id="id56" x="-66683" y="-66955">
+			<name x="-66674" y="-66980">Terminated</name>
+		</location>
+		<location id="id57" x="-66725" y="-67218">
+			<name x="-66735" y="-67252">Error</name>
+		</location>
+		<location id="id58" x="-66351" y="-66810">
+			<label kind="exponentialrate" x="-66368" y="-66801">read</label>
+		</location>
+		<location id="id59" x="-66215" y="-66810">
+			<committed/>
+		</location>
+		<location id="id60" x="-66529" y="-66691">
+			<committed/>
+		</location>
+		<location id="id61" x="-66267" y="-66691">
+			<label kind="exponentialrate" x="-66283" y="-66682">read</label>
+		</location>
+		<location id="id62" x="-66929" y="-66538">
+			<label kind="exponentialrate" x="-66946" y="-66529">write</label>
+		</location>
+		<location id="id63" x="-66929" y="-66462">
+			<label kind="exponentialrate" x="-66946" y="-66453">read</label>
+		</location>
+		<location id="id64" x="-66130" y="-66691">
+			<label kind="exponentialrate" x="-66138" y="-66682">write</label>
+		</location>
+		<location id="id65" x="-66776" y="-66538">
+			<label kind="exponentialrate" x="-66784" y="-66529">read</label>
+		</location>
+		<location id="id66" x="-66784" y="-66462">
+			<committed/>
+		</location>
+		<location id="id67" x="-66665" y="-66462">
+			<label kind="exponentialrate" x="-66674" y="-66453">write</label>
+		</location>
+		<location id="id68" x="-66436" y="-66462">
+			<label kind="exponentialrate" x="-66444" y="-66453">read</label>
+		</location>
+		<location id="id69" x="-66538" y="-66538">
+			<label kind="exponentialrate" x="-66555" y="-66529">write</label>
+		</location>
+		<location id="id70" x="-66096" y="-66462">
+			<label kind="exponentialrate" x="-66104" y="-66453">write</label>
+		</location>
+		<location id="id71" x="-66342" y="-66538">
+			<name x="-66352" y="-66572">Done</name>
+			<label kind="exponentialrate" x="-66351" y="-66529">read</label>
+		</location>
+		<location id="id72" x="-66096" y="-66538">
+			<label kind="exponentialrate" x="-66138" y="-66538">write</label>
+		</location>
+		<location id="id73" x="-66929" y="-67107">
+			<label kind="exponentialrate" x="-66971" y="-67107">read</label>
+		</location>
+		<init ref="id44"/>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id46"/>
+			<label kind="guard" x="-66929" y="-67192">!isEmpty()</label>
+			<label kind="synchronisation" x="-66929" y="-67175">reset[id]!</label>
+			<label kind="assignment" x="-66929" y="-67158">d1=dequeue(),
+d2=dequeue()</label>
+			<label kind="testcode">String received_choiceType = (String) oin.readObject(); 
+String received_actionType = (String) oin.readObject();
+assertEquals(received_actionType,actionType);
+assertEquals(received_choiceType,choiceType);</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id73"/>
+			<label kind="guard" x="-66929" y="-67082">d1==ORC_CHECK</label>
+			<label kind="testcode">//INIT CHECK
+assertEquals(msg,RunnableOrchestration.check_msg);</label>
+		</transition>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66198" y="-66640">!isFull()</label>
+			<label kind="synchronisation" x="-66138" y="-66640">reset[id]!</label>
+			<label kind="assignment" x="-66198" y="-66623">enqueue(ACK),d1=nil,
+steps[step]=DISTRIBUTED_MATCH_REQUESTER,
+step++</label>
+			<label kind="testcode">oout.writeObject(null);
+oout.flush();</label>
+			<nail x="-66096" y="-66623"/>
+			<nail x="-67082" y="-66623"/>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id72"/>
+			<label kind="guard" x="-66172" y="-66521">requester2offerer==nil</label>
+			<label kind="assignment" x="-66189" y="-66504">requester2offerer=ACK</label>
+		</transition>
+		<transition>
+			<source ref="id71"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66521" y="-66640">requester2offerer==ACK</label>
+			<label kind="synchronisation" x="-66512" y="-66623">reset[id]!</label>
+			<label kind="assignment" x="-66521" y="-66614">requester2offerer=nil,
+steps[step]=DISTRIBUTED_MATCH_OFFERER,
+step++</label>
+			<nail x="-66342" y="-66623"/>
+			<nail x="-67082" y="-66623"/>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id71"/>
+			<label kind="guard" x="-66512" y="-66555">offerer2requester==nil</label>
+			<label kind="assignment" x="-66521" y="-66538">offerer2requester=OFFER,
+d1=nil</label>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id70"/>
+			<label kind="guard" x="-66419" y="-66478">offerer2requester==OFFER</label>
+			<label kind="synchronisation" x="-66419" y="-66461">reset[id]!</label>
+			<label kind="assignment" x="-66359" y="-66461">offerer2requester=nil</label>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-66759" y="-66572">requester2offerer==REQUEST</label>
+			<label kind="synchronisation" x="-66758" y="-66555">reset[id]!</label>
+			<label kind="assignment" x="-66759" y="-66538">requester2offerer=nil</label>
+		</transition>
+		<transition>
+			<source ref="id67"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-66648" y="-66495">requester2offerer==nil</label>
+			<label kind="synchronisation" x="-66647" y="-66479">reset[id]!</label>
+			<label kind="assignment" x="-66648" y="-66462">requester2offerer=REQUEST</label>
+		</transition>
+		<transition>
+			<source ref="id66"/>
+			<target ref="id67"/>
+			<label kind="guard" x="-66767" y="-66479">d1==PORT</label>
+			<label kind="testcode">assertEquals(port,8080);</label>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id66"/>
+			<label kind="guard" x="-66912" y="-66495">!isEmpty()</label>
+			<label kind="synchronisation" x="-66911" y="-66479">reset[id]!</label>
+			<label kind="assignment" x="-66911" y="-66462">d1=dequeue()</label>
+			<label kind="testcode">int port = (Integer) oin.readObject(); // reading  port</label>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id65"/>
+			<label kind="guard" x="-66912" y="-66555">!isFull()</label>
+			<label kind="synchronisation" x="-66861" y="-66555">reset[id]!</label>
+			<label kind="assignment" x="-66911" y="-66538">enqueue(PORT)</label>
+			<label kind="testcode">oout.writeObject(8080); //port
+oout.flush();</label>
+		</transition>
+		<transition>
+			<source ref="id64"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66427" y="-66768">d1==NOPAYLOAD &amp;&amp; !isFull()</label>
+			<label kind="synchronisation" x="-66436" y="-66750">reset[id]!</label>
+			<label kind="assignment" x="-66291" y="-66750">enqueue(OFFER),d1=nil</label>
+			<label kind="testcode">oout.writeObject(null);
+oout.flush();</label>
+			<nail x="-66130" y="-66751"/>
+			<nail x="-67082" y="-66750"/>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id64"/>
+			<label kind="guard" x="-66249" y="-66725">!isEmpty()</label>
+			<label kind="synchronisation" x="-66249" y="-66708">reset[id]!</label>
+			<label kind="assignment" x="-66249" y="-66691">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject(); // reading payload distributed action
+assertEquals(msg,null);</label>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id63"/>
+			<label kind="guard" x="-67057" y="-66479">d1==ADDRESS</label>
+			<label kind="testcode">assertEquals(msg,null); // reading  address (null)</label>
+			<nail x="-66529" y="-66581"/>
+			<nail x="-67082" y="-66581"/>
+			<nail x="-67082" y="-66462"/>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id62"/>
+			<label kind="guard" x="-67065" y="-66555">d1==TYPEMATCH</label>
+			<label kind="testcode">assertEquals(msg,"match"); // reading  distributed action type</label>
+			<nail x="-66529" y="-66581"/>
+			<nail x="-67082" y="-66581"/>
+			<nail x="-67082" y="-66538"/>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id61"/>
+			<label kind="guard" x="-66506" y="-66707">d1==TYPEOFFER</label>
+			<label kind="assignment" x="-66521" y="-66691">steps[step]=DISTRIBUTED_OFFER,
+step++</label>
+			<label kind="testcode">assertEquals(msg,"offer"); // reading  distributed action type</label>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id60"/>
+			<label kind="guard" x="-66674" y="-66725">!isEmpty()</label>
+			<label kind="synchronisation" x="-66673" y="-66708">reset[id]!</label>
+			<label kind="assignment" x="-66674" y="-66691">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject();</label>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66308" y="-66912">d1==OFFER</label>
+			<label kind="assignment" x="-66266" y="-66895">d1=nil</label>
+			<nail x="-66215" y="-66895"/>
+			<nail x="-67082" y="-66895"/>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id59"/>
+			<label kind="guard" x="-66334" y="-66844">!isEmpty()</label>
+			<label kind="synchronisation" x="-66333" y="-66827">reset[id]!</label>
+			<label kind="assignment" x="-66334" y="-66810">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject(); //receiving the matching offer
+assertEquals(msg, expected payload);</label>
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id58"/>
+			<label kind="guard" x="-66521" y="-66844">d1==SKIP&amp;&amp;!isFull()</label>
+			<label kind="synchronisation" x="-66521" y="-66827">reset[id]!</label>
+			<label kind="assignment" x="-66521" y="-66810">enqueue(REQUEST),
+steps[step]=CENTRALISED_MATCH,step++</label>
+			<label kind="testcode">oout.writeObject(INSERT REQUEST);
+oout.flush();</label>
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66861" y="-66912">(d1==NOPAYLOAD||d1==REQUEST)&amp;&amp;!isFull()</label>
+			<label kind="synchronisation" x="-66784" y="-66895">reset[id]!</label>
+			<label kind="assignment" x="-66725" y="-66895">enqueue(OFFER),d1=nil,
+steps[step]=CENTRALISED_OFFER,
+step++</label>
+			<label kind="testcode">oout.writeObject(INSERT OFFER);
+oout.flush();</label>
+			<nail x="-66538" y="-66894"/>
+			<nail x="-67083" y="-66895"/>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id57"/>
+			<label kind="guard" x="-66886" y="-67294">(d1!=choice || d2!=action)
+&amp;&amp;!isFull()</label>
+			<label kind="synchronisation" x="-66886" y="-67260">reset[id]!</label>
+			<label kind="assignment" x="-66895" y="-67243">enqueue(ERROR),
+d1=nil,d2=nil,
+steps[step]=ERROR,step++</label>
+			<label kind="testcode">oout.writeObject("incompatible");
+oout.flush();</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id56"/>
+			<label kind="guard" x="-66853" y="-66972">d1==ORC_STOP</label>
+			<label kind="assignment" x="-66895" y="-66954">d1=nil,steps[step]=ORC_STOP,step++</label>
+			<label kind="testcode">assertEquals(msg,RunnableOrchestration.stop_msg);</label>
+			<nail x="-66930" y="-66955"/>
+		</transition>
+		<transition>
+			<source ref="id53"/>
+			<target ref="id55"/>
+			<label kind="guard" x="-66657" y="-66844">!isEmpty()</label>
+			<label kind="synchronisation" x="-66658" y="-66827">reset[id]!</label>
+			<label kind="assignment" x="-66657" y="-66810">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject(); // reading payload centralised action
+assertEquals(msg,expectedPayload);</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id54"/>
+			<label kind="guard" x="-66918" y="-66710">action==DISTRIBUTED_ACTION</label>
+			<nail x="-66929" y="-66691"/>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id53"/>
+			<label kind="guard" x="-66913" y="-66827">action==CENTRALISED_ACTION</label>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66478" y="-67328">!isFull()&amp;&amp;d1==CHOICES</label>
+			<label kind="synchronisation" x="-66470" y="-67311">reset[id]!</label>
+			<label kind="assignment" x="-66487" y="-67294">enqueue(SERVICE_CHOICE),
+d1=nil</label>
+			<label kind="testcode">choice = INSERT CHOICE;
+oout.writeObject(choice);
+oout.flush();
+//STOP CHOICE</label>
+			<nail x="-66283" y="-67312"/>
+			<nail x="-67082" y="-67312"/>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id52"/>
+			<label kind="guard" x="-66300" y="-67252">!isEmpty()</label>
+			<label kind="synchronisation" x="-66300" y="-67235">reset[id]!</label>
+			<label kind="assignment" x="-66300" y="-67218">d1=dequeue()</label>
+			<label kind="testcode">choices = (String[]) oin.readObject();</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id51"/>
+			<label kind="guard" x="-66283" y="-67107">d1 == ORC_CHOICE</label>
+			<label kind="assignment" x="-66283" y="-67090">steps[step]=ORC_CHOICE,step++</label>
+			<label kind="testcode">assertEquals(msg,RunnableOrchestration.choice_msg);</label>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66487" y="-67158">d1==SKIP</label>
+			<label kind="assignment" x="-66487" y="-67141">d1=nil,
+steps[step]=SKIP,step++</label>
+			<label kind="testcode">assertEquals(msg,null);</label>
+			<nail x="-66580" y="-67311"/>
+			<nail x="-67082" y="-67311"/>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-66393" y="-67031">!isEmpty()</label>
+			<label kind="synchronisation" x="-66393" y="-67014">reset[id]!</label>
+			<label kind="assignment" x="-66393" y="-66997">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject();</label>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-66691" y="-67124">choice==
+DICTATORIAL_CHOICE</label>
+			<label kind="assignment" x="-66750" y="-67090">steps[step]=DICTATORIAL_CHOICE,step++</label>
+			<nail x="-66682" y="-67311"/>
+			<nail x="-67082" y="-67311"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id49"/>
+			<label kind="guard" x="-66665" y="-67031">choice==MAJORITARIAN_CHOICE</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id48"/>
+			<label kind="guard" x="-67015" y="-66853">d1==ACTION</label>
+			<label kind="testcode">assertEquals(msg, expected action);</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id47"/>
+			<label kind="guard" x="-66861" y="-67031">d1==ORC_CHOICE</label>
+			<label kind="testcode">assertEquals(msg,RunnableOrchestration.choice_msg);</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id44"/>
+			<label kind="guard" x="-67073" y="-67294">d1==choice 
+&amp;&amp; d2==action
+&amp;&amp; !isFull()</label>
+			<label kind="synchronisation" x="-67064" y="-67235">reset[id]!</label>
+			<label kind="assignment" x="-67167" y="-67218">enqueue(ACK),
+d1=nil,d2=nil,
+steps[step]=ORC_CHECK,step++</label>
+			<label kind="testcode">oout.writeObject(RunnableOrchestration.ack_msg);
+oout.flush();
+//STOP CHECK</label>
+			<nail x="-67082" y="-67218"/>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id45"/>
+			<label kind="guard" x="-67039" y="-67048">!isEmpty()</label>
+			<label kind="synchronisation" x="-67039" y="-67031">reset[id]!</label>
+			<label kind="assignment" x="-67039" y="-67014">d1=dequeue()</label>
+			<label kind="testcode">msg = (String) oin.readObject();</label>
+		</transition>
+	</template>
+	<template>
+		<name>SocketTimeout</name>
+		<parameter>const id_t id</parameter>
+		<declaration>clock c=0.0;</declaration>
+		<location id="id74" x="-935" y="-773">
+		</location>
+		<init ref="id74"/>
+		<transition>
+			<source ref="id74"/>
+			<target ref="id74"/>
+			<label kind="synchronisation" x="-977" y="-824">reset[id]?</label>
+			<label kind="assignment" x="-977" y="-807">c=0</label>
+			<nail x="-952" y="-807"/>
+			<nail x="-918" y="-807"/>
+		</transition>
+	</template>
+	<system>
+/** TEST_FILEEXT .java */
+/** TEST_PREFIX
+
+
+String choiceType = INSERT
+String actionType = INSERT
+String msg;
+String choice;
+String action;
+int offerer;
+int requester;
+            
+*/
+
+/** TEST_POSTFIX
+  
+*/
+
+ror = RunnableOrchestration();
+alice = RunnableOrchestratedContract(0);
+bob = RunnableOrchestratedContract(1);
+
+system ror,alice,bob;
+    </system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt;(
+alice.steps[0]==ORC_CHECK&amp;&amp;
+bob.steps[1]==ORC_CHECK&amp;&amp;
+alice.steps[2]==CENTRALISED_OFFER&amp;&amp;
+alice.steps[3]==CENTRALISED_MATCH&amp;&amp;
+bob.steps[4]==CENTRALISED_OFFER&amp;&amp;
+alice.steps[5]==DICTATORIAL_CHOICE&amp;&amp;
+bob.steps[6]==DICTATORIAL_CHOICE&amp;&amp;
+alice.steps[7]==CENTRALISED_OFFER&amp;&amp;
+alice.steps[8]==DICTATORIAL_CHOICE&amp;&amp;
+bob.steps[9]==DICTATORIAL_CHOICE&amp;&amp;
+alice.steps[10]==ORC_STOP&amp;&amp;
+bob.steps[11]==ORC_STOP)</formula>
+			<comment>testing the dictatorial centralised orchestration
+AlicexBob
+the executed trace is (!euro,-)(?coffee,!coffee)[(!euro,-)^*]
+steps 7-9 may repeat 0 or more time at runtime, the trace needs to be adjusted for this
+
+concrete test file :  DictatorialCentralisedRunnableOrchestrationTest.java
+    </comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt;(
+alice.steps[0]==ORC_CHECK&amp;&amp;
+bob.steps[1]==ORC_CHECK&amp;&amp;
+alice.steps[2]==CENTRALISED_OFFER&amp;&amp;
+alice.steps[3]==CENTRALISED_MATCH&amp;&amp;
+bob.steps[4]==CENTRALISED_OFFER&amp;&amp;
+alice.steps[5]==ORC_CHOICE&amp;&amp;
+bob.steps[6]==SKIP&amp;&amp;
+alice.steps[7]==ORC_STOP&amp;&amp;
+bob.steps[8]==ORC_STOP)</formula>
+			<comment>testing the majoritarian centralised orchestration
+the executed trace is (!euro,-)(?coffee,!coffee)
+concrete test file :  MajoritarianCentralisedRunnableOrchestrationTest.java</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt;(
+alice.steps[0]==ORC_CHECK&amp;&amp;
+bob.steps[1]==ORC_CHECK&amp;&amp;
+alice.steps[2]==DISTRIBUTED_OFFER&amp;&amp;
+alice.steps[3]==DISTRIBUTED_MATCH_OFFERER&amp;&amp;
+bob.steps[4]==DISTRIBUTED_MATCH_REQUESTER&amp;&amp;
+alice.steps[5]==ORC_STOP&amp;&amp;
+bob.steps[6]==ORC_STOP)</formula>
+			<comment>testing the majoritarian distributed orchestration, although no choice is performed in this trace
+the executed trace is (!euro,-)(?coffee,!coffee)
+concrete test file :  MajoritarianDistributedRunnableOrchestrationTest.java</comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt;(alice.steps[0]==ORC_CHECK)</formula>
+			<comment>the generated test goes into the method
+private void uppaal_check( ObjectInputStream oin, ObjectOutputStream oout)
+
+    </comment>
+		</query>
+	</queries>
+</nta>
