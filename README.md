@@ -12,9 +12,11 @@
   
  Thus, <tt>CARE</tt> is the missing piece between specifications through contract automata  and their implementations, so making explicit the low-level interactions realising the prescribed actions.
  
-### Scientific Publication
+### Scientific Publications
 
 Basile, D., ter Beek, M.H. (2023). A Runtime Environment for Contract Automata. In: Chechik, M., Katoen, JP., Leucker, M. (eds) Formal Methods. FM 2023. Lecture Notes in Computer Science, vol 14000. Springer, Cham. https://doi.org/10.1007/978-3-031-27481-7_31
+
+Basile, D., 2024, June. Modelling, Verifying and Testing the Contract Automata Runtime Environment with Uppaal. In International Conference on Coordination Models and Languages (pp. 93-110). Cham: Springer Nature Switzerland. https://doi.org/10.1007/978-3-031-62697-5_6
 
 
 
