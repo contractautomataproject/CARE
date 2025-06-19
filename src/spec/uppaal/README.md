@@ -58,7 +58,7 @@ This suggests that the model is not excessively abstract compared to the actual 
 
 In the file `model_traceability.xml` each transition is traced back to the corresponding source code instructions using comments.
 The model is slightly polished to improve readability.
-Traceability information is related to the source code version b1a6954, navigable here https://github.com/contractautomataproject/CARE/tree/b1a695469fbb5a4d212a96dd95bffa0ed39b71b8. 
+Traceability information is related to the source code version b1a6954, navigable here [https://github.com/contractautomataproject/CARE/releases/tag/v1.0.1](https://github.com/contractautomataproject/CARE/releases/tag/v1.0.1). 
 
 The `RunnableOrchestratedContract` automaton with traceability is displayed below.
 
